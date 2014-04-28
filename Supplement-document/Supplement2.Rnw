@@ -1,0 +1,691 @@
+% formatting
+\documentclass[twocolumn]{book}
+\usepackage{amssymb,latexsym}
+\usepackage{authblk}
+\usepackage[top=0.5in, bottom=0.5in, left=0.5in, right=0.5in]{geometry}
+\usepackage{parskip}
+\setlength{\parindent}{0pt}
+\usepackage{textgreek}
+\usepackage{pbox}
+\usepackage{multirow}
+\usepackage{changepage}
+\usepackage{longtable}
+\renewcommand{\thefigure}{M\arabic{figure}}
+%\usepackage[top=0.5in, bottom=0.5in, left=0.5in, right=0.5in]{geometry}
+
+% command for making a table within the xcell of a table
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}l@{}}#2\end{tabular}}
+
+% citations
+\usepackage[url=false,
+            backref=true,
+            autocite=superscript,
+            hyperref=true,
+            style=nature,
+            sorting=none,
+            maxbibnames=99,
+            minbibnames=99, 
+            doi=false,url=false,isbn=false]{biblatex}
+%\addbibresource{Manual.bib}
+\AtEveryBibitem{\clearfield{issn}}
+\AtEveryCitekey{\clearfield{issn}}
+\DefineBibliographyStrings{english}{%
+                                    backrefpage  = {see p.}, % for single page number
+                                    backrefpages = {see pp.} % for multiple page numbers
+}
+
+
+% links
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage[colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=blue]{hyperref}
+
+
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+
+<<set-options, include=FALSE, cache=FALSE>>=
+  opts_knit$set(root.dir="../",width=27)
+  opts_chunk$set(eval=TRUE,dev="png",dpi=400,tidy=TRUE,message=FALSE,cache=TRUE,
+                 tidy.opts=list(width.cutoff=27),out.width="\\columnwidth")
+@
+
+\title{Supplement}
+\author[1]{\fontsize{10}{11}\selectfont Kevin~M. D'Auria}
+             \author[2]{Meghan~J. Bloom}
+             \author[2]{Yesenia Reyes}
+             \author[2]{Mary~C. Gray}
+             \author[2]{Edward~J. van Opstal}
+             \author[1]{Jason~A. Papin}
+             \author[2]{Erik~L. Hewlett}
+             \affil[1]{Department of Biomedical Engineering} 
+             \affil[2]{Division of Infectious Diseases and International Health\\
+             Department of Medicine}
+             \affil[ ]{University of Virginia, Charlottesville, VA}
+             \date{}
+             \maketitle
+
+\hypersetup{linkcolor=black}
+\setcounter{tocdepth}{2}
+\tableofcontents
+\hypersetup{linkcolor=blue}
+
+<<hiddenopts, echo=FALSE, cache=FALSE>>=
+source("./Scripts2/library.R")
+
+small.theme = theme(legend.text = element_text(size=7),
+                    legend.key.size = unit(8, "points"),
+                    legend.title = element_text(size=7),
+                    legend.margin = unit(1, "points"),
+                    plot.margin = unit(rep(0,4), "points"),
+                    axis.text = element_text(size=7),
+                    axis.title = element_text(size=7),
+                    strip.text = element_text(size=7) )
+
+ggplot = function(...)
+  ggplot2::ggplot(...) + small.theme
+
+qplot = function(...)
+  ggplot2::qplot(...) + small.theme
+@
+
+
+\section{Introduction}\label{S:Intro}
+
+This document includes the supplemental data referred to in the manuscript
+as well as instructions for how to reproduce our analyses and explore the
+data further. Use the clickable table of contents to navigate quickly.
+This is a functional document in that scripts (written in the
+R programming languange with the \texttt{knitr} package) are embedded, and they were run during
+PDF creation to produce the figures and output shown. Thus, the analyses can
+be repeated by downloading the source of this document (with the data) or copy-pasting
+all of the code into one's own R console.
+
+\section{ References from manuscript }\label{S:ReFig}
+
+\subsection{ Reference 1 }
+
+``The impedance curves of cells treated with TcdA (300 ng/ml) 
+and TcdB (10 ng/ml) diverged from controls in 10 and 20 minutes, 
+respectively (Supplement).''
+
+<<libraries, tidy=TRUE, cache=FALSE, echo=FALSE>>=
+# A library of functions for processing multi-well data
+source("./Scripts2/library.R")
+
+# Custom 'normalize_toxin' and 'smoother_toxin' functions made
+# for this LaTeX document specifically
+source("./Scripts2/latexLibrary.R")
+@
+
+<<loadData, tidy=TRUE, cache=TRUE, echo=FALSE>>=
+# Parse and load the data
+wells = parse.RTCAanalyze( metadata="./Annotations.csv", data.dir="./Data" )
+@
+
+<<suppRef1, tidy=TRUE, fig.width=7.5, fig.height=2.5, echo=FALSE>>=
+subset = retrieveWells(wells,file=c("J774-a.txt","J774-b.txt"))
+t.subset = normalize_toxin(subset,c(-2,Inf))
+p1 = plot( retrieveWells(t.subset,compounds="TcdA"), xlim=c(-0.01,0.7), showpoints=TRUE) + ylab("Normalized Impedance")
+p2 = plot( retrieveWells(t.subset,compounds="TcdB"), xlim=c(-0.01,1.2), showpoints=TRUE) + ylab("Normalized Impedance")
+grid.arrange(p1,p2,ncol=2)
+@
+
+\subsection{ Reference 2 }
+
+``To confirm the low toxin-sensitivity of neutrophils, we did attempt to 
+measure impedance changes of neutrophils in response to toxins, yet 
+the variability in these primarily non-adherent cells (impedance 
+largely measures adherence) was too high to identify 
+differences (Supplement).''
+
+See \ref{S:PMNs}
+
+\section{ Reproducing Figures }\label{S:ReproFig}
+
+Below are the scripts to reproduce the figures. The data files
+and annotation file needed for the scripts to work are included in
+the supplemental data folder. The figures below were exported to PDFs.
+Cosmetic alterations (colors, line widths, axes labeling, legends, etc.) were
+made with Adobe Illustrator.
+
+<<librariesFake, eval=FALSE, tidy=TRUE, cache=TRUE>>=
+# A library of functions for processing multi-well data
+source("./Scripts2/library.R")
+
+# Custom 'normalize_toxin' and 'smoother_toxin' functions made
+# for this LaTeX document specifically
+source("./Scripts2/latexLibrary.R")
+
+# Parse and load the data
+wells = parse.RTCAanalyze( metadata="./Annotations.csv", data.dir="./Data" )
+@
+
+\subsection{ Figure 1 }
+
+<<figure1, tidy=TRUE, fig.width=7.5, fig.height=2.5 >>=
+# Process data from file HCT8-4.txt
+subset = retrieveWells(wells,file="HCT8-4.txt")
+t.subset = normalize_toxin( subset, xlim=c(-Inf, 100) )
+  
+# Select conditions: controls and TcdA 1000 ng/ml
+conditions = groupWells(t.subset,group="by.concentrations") %in% c("","TcdA-1000")
+f.subset = t.subset[conditions]
+
+# Make and organize the two graphs
+p1 = plot(f.subset, xlim=c(-43,10) )
+p2 = plot(f.subset, xlim=c(-1,10) )
+grid.arrange( p1, p2, ncol=2 )
+@
+
+\subsection{ Figure 2 }
+
+<< preFigure2, fig.width=7.5, fig.height=4.5>>=
+#### Since this figure includes data from multiple experiments and files,
+#### they must all be processed first
+
+# Only select wells seeded with at most 6,000 HCT8 cells
+hct8 = retrieveWells(wells, file = "HCT8.txt", compounds = "HCT8", max.concentrations = 6000)
+
+# The rest of the wells come from these files
+files = list( "CHO.txt", "IMCE.txt", c("HUVEC-a.txt","HUVEC-b.txt"), 
+              c("T84-a.txt","T84-b.txt"))
+subsets = lapply(files, function(f) retrieveWells(wells, file = f))
+subsets = c(list(hct8), subsets)
+
+# Normalize each subset
+xlims = list(c(-0.1, 43), c(-1, Inf), c(-1, Inf), c(-1, 60), c(-1, 27))
+n.subsets = mapply(normalize_toxin, subsets, xlim = xlims)
+
+# Add a smoother to each subset
+x.scales = c( 2/3, 1, 1, 2/3, 2/3 )
+s.subsets = mapply( smoother_toxin, n.subsets, x.scale=x.scales )
+
+# Calculate ABC for each subset (with different integration limits)
+left = rep(0, 5)
+right = c(43, 40, 80, 80, 27)
+i.subsets = mapply(integrate, s.subsets, left, right)
+allwells = do.call(c, i.subsets)
+  
+# Calculate MaxS for each well
+allwells = max.rate(allwells, ID = "toxinAdd", min.diff = 10/60/60, 
+                    ylim = 0.8, xlim = 2)
+
+
+
+######### Panel A. Different cell types. Same concentrations. #########
+subset = retrieveWells(allwells, compounds = "TcdA", ID = "toxinAdd", 
+                       max.concentrations = 101, min.concentrations = 99)
+panelA = plot(subset, xlim = c(-1, 10), se = FALSE, color = "by.total.compounds",
+              linetype = "by.compounds")
+
+######### Panel B. Same cell type. Different toxins ############
+subset = retrieveWells(allwells, compounds = "IMCE")
+subset2 = retrieveWells(subset, compounds = c("TcdA", "TcdB"), ID = "toxinAdd",
+                        max.concentrations = c(101, 101), min.concentrations = c(99, 99))
+panelB = plot(subset2, xlim = c(-0.1, 2), se = FALSE)
+
+######## Panel C. MaxS and ABC for IMCE cells ###########
+subset = retrieveWells(allwells, compounds = "IMCE")
+MaxS = groupMetric(subset, ID = "toxinAdd", metric = "max.rate")
+p1 = plotMetric(MaxS)
+ABC = groupMetric(subset, ID = "toxinAdd", metric = "integral")
+p2 = plotMetric(ABC)
+panelC = arrangeGrob(p1 + theme(legend.position = "none"), 
+                     p2 + theme(legend.position = "none"), ncol = 2)
+
+####### Panel D. The MCC for each cell type ##############
+# The MCC was found by plotting the ABC of each cell type over
+# a range of concentrations. The concentration diverging from
+# controls was considered the MCC
+ABC = groupMetric(allwells, ID = "toxinAdd", metric = "integral")
+ABC$cells = groupWells(allwells, group = "by.total.compounds")
+plotMetric(ABC, file = FALSE) + facet_wrap(~cells, scales = "free_y")
+@
+
+After the processing, the four panels can be combined.
+
+<<Figure2, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
+# Manually enter the MCC for each cell type
+d = data.frame( type = c( "CHO", "HCT8", "HUVEC", "IMCE", "T84" ),
+                a    = c( 1    ,  1    ,  1     ,  0.1  , 0.1   ),
+                b    = c( .001 ,  .01  ,  .01  ,  .0001 , 0.1   ) )
+panelD = ggplot( d, aes( x=log10(a), y=log10(b), label=type) ) + geom_text() +
+  scale_x_reverse(limits=c(0,-4)) + scale_y_reverse(limits=c(0,-4)) + 
+  geom_abline(slope=1,intercept=0) + coord_equal() + geom_point(color="red")
+
+# Show the final plot
+grid.arrange( panelA, panelB, panelC, panelD, ncol=2 )
+@
+
+\subsection{ Figure 3 }
+
+<<Figure3top, fig.width=7.5, fig.height=2.5>>=
+###### Panel A
+subset = retrieveWells(wells, file = c("J774-a.txt", "J774-b.txt"))
+t.subset = normalize_toxin(subset, xlim = c(-Inf, 100))
+
+# Toxin A curves
+conditions = groupWells(t.subset, group = "by.concentrations") %in% 
+                 c("", paste0("TcdA-", c(0.1, 3, 100, 1000)))
+p1 = plot(t.subset[conditions], xlim = c(-0.01, 40))
+
+# Toxin B curves
+conditions = groupWells(t.subset, group = "by.concentrations") %in% 
+                 c("", paste0("TcdB-", c(0.1, 10, 100)))
+p2 = plot(t.subset[conditions], xlim = c(-0.01, 15))
+
+# TcdA and TcdB curves side by side
+grid.arrange(p1, p2, ncol = 2)
+@
+
+<<Figure3bottom, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+###### Panel B
+subset = retrieveWells(wells, file = "J774-4.txt")
+t.subset = normalize_toxin(subset, xlim = c(-Inf, 100))
+
+conditions = groupWells(t.subset, group = "by.concentrations") %in% 
+                  c("", "TcdA-300", "TcdB-100", "TcdB-1")
+p3 = plot(t.subset[conditions], xlim = c(-1, 48))
+p4 = plot(t.subset[conditions], xlim = c(-1, 5))
+grid.arrange(p3, p4, ncol = 2)
+@
+
+\subsection{ Figure 4 }
+
+<<Figure4, fig.width=7.5, fig.height=5>>=
+subset = retrieveWells(wells, file = c("HCT8-4.txt"))
+t.subset = normalize_toxin(subset, xlim = c(-2, Inf))
+
+###### Panel A
+conditions = groupWells(t.subset, group = "by.compounds") %in% c("gdTcdB", "")
+p1 = plot(t.subset[conditions]) + ylim(0, 1.2)
+
+###### Panel B
+conditions = groupWells(t.subset, group = "by.concentrations") %in% 
+                 c("", "gdTcdB-100", "TcdB-10", "gdTcdB-100.TcdB-10")
+p2 = plot(t.subset[conditions], xlim = c(-0.2, 4)) + ylim(0, 1.2)
+
+###### Panel C
+conditions = groupWells(t.subset, group = "by.concentrations") %in% 
+                 c("", "gdTcdB-1000", "TcdA-1000", "gdTcdB-1000.TcdA-1000", 
+                                      "TcdA-100", "gdTcdB-1000.TcdA-100")
+p3 = plot(t.subset[conditions], xlim = c(-0.2, 10)) + ylim(0, 1.2)
+
+grid.arrange(p1,p2,p3,ncol=2)
+@
+
+\subsection{ Figure 5 }
+
+<<Figure5, fig.width=7.5, fig.height=4.5>>=
+##### Panel A
+subset = retrieveWells(wells, file = "J774-4.txt")
+t.subset = normalize_toxin(subset, xlim = c(-2, Inf))
+conditions = groupWells(t.subset, group = "by.compounds") %in% 
+                 c("", "TcdB", "gdTcdB")
+p1 = plot(t.subset[conditions], xlim = c(-1, 48))
+
+##### Panel B
+subset = retrieveWells(wells, file = c("J774-3a.txt", "J774-3b.txt"))
+t.subset = normalize_toxin(subset, xlim = c(-2, Inf))
+conditions = groupWells(t.subset, group = "by.concentrations") %in% 
+                 c("", "TcdB-0.01", "gdTcdB-1.TcdB-0.01")
+p2 = plot(t.subset[conditions], xlim = c(-0.2, 5))
+
+##### Panel C
+subset = retrieveWells(wells, file = c("J774-5.txt"))
+t.subset = normalize_toxin(subset, xlim = c(-2, Inf))
+conditions = groupWells(t.subset, group = "by.concentrations") %in% 
+                  c("", "gdTcdB-10", "TcdA-1", "gdTcdB-10.TcdA-1")
+p3 = plot(t.subset[conditions], xlim = c(-0.2, 24))
+
+grid.arrange(p1, p2, p3, ncol = 2)
+@
+
+\section{ Exploring the data }
+
+All experiments, each involving several experimental conditions, are summarized
+in the table below. Independent experiments that occurred on different days are
+separated by horizontal lines.
+Diagrams of the physical multi-well plates are displayed in \ref{S:plateLayouts}.
+The number of cells seeded and all the incubation times can be found in the
+csv annotation file in the supplemental data or can be accessed in the \texttt{wells} variable
+within R (as shown in \ref{S:ReFig}).
+
+\subsection{Plate summaries}
+
+\begin{table*}
+\begin{tabular}{ l l l l }
+  Cell type & File names & Toxins (ng/ml) & Notes \\ \hline\hline
+   \multirow{22}{*}{HCT8}  & 
+              HCT8.txt & \specialcell{ A (500, 100, 10, 1, 0.1) \\
+                                       B (500, 100, 10, 1, 0.1) } & \\ \cline{2-4}
+   & \specialcell{HCT8-2a.txt\\ HCT8-2b.txt} & \specialcell{ B (1), A (100) \\
+                                     gdTcdB (100, 1000) \\
+                                     B (1) + gdTcdB (100) \\ B (1) + gdTcdB(1000) \\
+                                     A (100) + gdTcdB (1000) } & toxins + gdTcdB \\ \cline{2-4}
+   & HCT8-3.txt & \specialcell{ B (1), A (100) \\
+                       gdTcdB (10, 100, 1000) \\
+                       B (1) + gdTcdB (10) \\
+                       B (1) + gdTcdB (100) \\
+                       A (100) + gdTcdB (1000) } & toxins + gdTcdB \\ \cline{2-4}
+   & HCT8-4.txt & \specialcell{ B (10, 100), A (100, 1000) \\
+                       gdTcdB (100, 1000) \\
+                       B (10) + gdTcdB (100) \\
+                       B (10) + gdTcdB (1000) \\
+                       B (100) + gdTcdB (100) \\
+                       B (100) + gdTcdB (1000) \\
+                       A (10) + gdTcdB (100) \\
+                       A (100) + gdTcdB (100) \\
+                       A (100) + gdTcdB (1000) \\
+                       A (1000) + gdTcdB (1000) } & toxins + gdTcdB \\ \hline
+   CHO & CHO.txt & \specialcell{ A (1000, 100, 1, 0.1, 0.01, 1e-3, 1e-4 ) \\
+                                B (1000, 100, 1, 0.1, 0.01, 1e-3, 1e-4 ) } & \\ \hline
+   IMCE & IMCE.txt & \specialcell{ A (1000, 100, 10, 1, 0.1, 0.01, 0.001 ) \\ 
+                                         B (1000, 100, 10, 1, 0.1, 0.01, 0.001 )} &  \\ \hline
+   HUVEC & \specialcell{HUVEC-a.txt\\ HUVEC-b.txt} &
+           \specialcell{A (1000, 300, 100, 30, 10, 1, 0.1) \\
+                        B (1000, 300, 100, 30, 10, 1, 0.1) } &  \\ \hline
+   T84 & \specialcell{T84-a.txt \\ T84-b.txt } &
+         \specialcell{A (300, 100, 30, 10, 3, 1, 0.1) \\
+                      B (1000, 300, 100, 30, 10, 3, 1, 0.1) } &  \\ \hline
+   \multirow{16}{*}{J774}  & \specialcell{ J774-a.txt \\ J774-b.txt} 
+                          & \specialcell{ A (0.1, 1, 3, 10, 100, 300, 1000) \\
+                                          B (0.1, 1, 3, 10, 100, 300, 1000) } & \\ \cline{2-4}
+                          & J774-2.txt
+                          & B (0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10) & \\ \cline{2-4}
+                          & \specialcell{ J774-3a.txt \\ J774-3b.txt} 
+                          & \specialcell{ A (10), B (0.01) \\
+                                          gdTcdB (0.1, 1, 100) \\
+                                          B (0.01) + gdTcdB (1) \\
+                                          B (0.01) + gdTcdB (0.1) \\
+                                          A (10) + gdTcdB (100) } & toxins + gdTcdB \\ \cline{2-4}
+                          & J774-4.txt
+                          & \specialcell{ A (3, 300), B (1, 100) \\
+                                          gdTcdB (1, 100) \\
+                                          A (10) + gdTcdB (100) } & toxins + gdTcdB \\ \cline{2-4}
+                          & J774-5.txt
+                          & \specialcell{ A (1, 1000), \\
+                                          gdTcdB (10, 100) \\
+                                          A (1) + gdTcdB (10) \\
+                                          A (1000) + gdTcdB (1000) \\
+                                          B (10) + gdTcdB (100) } & toxins + gdTcdB \\ \hline
+   \multirow{8}{*}{PMN} & \specialcell{PMN-a.txt \\ PMN-b.txt} &
+         \specialcell{A (10000, 7000, 5000, 3000, 1000, 500, 100) \\
+                      B (10000, 7000, 5000, 3000, 1000, 500, 100) } & toxins + IL8 \\ \cline{2-4}
+    & \specialcell{PMN-2a.txt \\ PMN-2b.txt} &
+         \specialcell{A (1000, 100, 10, 1, 0.1, 0.01, 0.001) \\
+                      B (1000, 100, 10, 1, 0.1, 0.01, 0.001) } & toxins alone \\ \cline{2-4}
+    & PMN-3.txt &
+         \specialcell{A (10, 100, 1000) \\
+                      B (1, 10, 100, 1000) } & 
+         \specialcell{ toxins alone and \\ toxins + IL8 } \\ \cline{2-4}
+    & PMN-4.txt &
+         \specialcell{A (10, 100, 1000) \\
+                      B (10, 100, 1000) } & 
+         \specialcell{ toxins alone and \\ toxins + IL8 } \\ \hline
+   
+\end{tabular}
+\end{table*}
+
+\subsection{HCT8 cells}
+
+\subsubsection{HCT8.txt}
+
+<<hct8_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells, file = "HCT8.txt", compounds = "HCT8", max.concentrations = 6000)
+t.subset = normalize_toxin( subset, xlim=c(-1, 10))
+p1 = plot( retrieveWells( t.subset, compounds="TcdA"))
+p2 = plot( retrieveWells( t.subset, compounds="TcdB"))
+grid.arrange(p1, p2, ncol=2)
+@
+
+\subsubsection{HCT8-2a.txt and HCT8-2b.txt}
+
+<<hct8-2_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells, file = c("HCT8-2a.txt", "HCT8-2b.txt"))
+t.subset = normalize_toxin( subset, xlim=c(-2, Inf))
+p1 = plot( t.subset, xlim=c(-2,150) )
+
+t.subset = smoother_toxin( t.subset, x.scale=1.1 )
+t.subset = max.rate( t.subset, ID="toxinAdd", min.diff=10/3600, ylim=0.88, xlim=2 )
+maxs = getMetric( t.subset, metric="max.rate" )
+labels = factor(groupWells(t.subset,group="by.concentrations",ID="toxinAdd"),
+                levels=c("","gdTcdB-100","gdTcdB-1000","gdTcdB-1000.TcdA-100","TcdA-100",
+                         "gdTcdB-100.TcdB-1","gdTcdB-10.TcdB-1","TcdB-1"))
+p2 = qplot( labels, maxs$value, color=labels ) + no_x_labels +
+      labs(color="Legend") + xlab("group") + ylab("MaxS")
+
+grid.arrange(p1, p2, ncol=2)
+@
+
+\subsubsection{HCT8-3.txt}
+
+<<hct8-3_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells, file = c("HCT8-3.txt"))
+t.subset = normalize_toxin( subset, xlim=c(-2, 58))
+p1 = plot( t.subset )
+
+t.subset = smoother_toxin( t.subset, x.scale=1.1 )
+t.subset = max.rate( t.subset, ID="toxinAdd", min.diff=10/3600, ylim=0.88, xlim=2 )
+maxs = getMetric( t.subset, metric="max.rate" )
+labels = factor(groupWells(t.subset,group="by.concentrations",ID="toxinAdd"),
+                levels=c("","gdTcdB-10","gdTcdB-100","gdTcdB-1000","gdTcdB-100.TcdB-1",
+                         "gdTcdB-10.TcdB-1","TcdB-1","gdTcdB-1000.TcdA-100","TcdA-100",
+                         "TcdAother-100","TcdAup-100"))
+p2 = qplot( labels, maxs$value, color=labels ) + no_x_labels +
+      labs(color="Legend") + xlab("group") + ylab("MaxS")
+grid.arrange(p1,p2,ncol=2)
+@   
+
+\subsubsection{HCT8-4.txt}
+
+<<hct8-4_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
+subset = retrieveWells(wells, file = c("HCT8-4.txt"))
+t.subset = normalize_toxin( subset, xlim=c(-2, 155))
+p1 = plot( t.subset )
+
+t.subset = smoother_toxin( t.subset, x.scale=1.1 )
+t.subset = max.rate( t.subset, ID="toxinAdd", min.diff=10/3600, ylim=0.88, xlim=2 )
+t.subset = integrate(t.subset,lower=0,upper=10)
+
+maxs = getMetric( t.subset, metric="max.rate" )
+labels = factor(groupWells(t.subset,group="by.concentrations",ID="toxinAdd"),
+                levels=c("","gdTcdB-100","gdTcdB-1000",
+                            "gdTcdB-100.TcdA-10","TcdA-10",
+                            "gdTcdB-1000.TcdA-100","gdTcdB-100.TcdA-100","TcdA-100",
+                            "gdTcdB-1000.TcdA-1000","TcdA-1000",
+                            "gdTcdB-1000.TcdB-10", "gdTcdB-100.TcdB-10", "TcdB-10",
+                            "gdTcdB-1000.TcdB-100","gdTcdB-100.TcdB-100","TcdB-100"))
+p2 = qplot( labels, maxs$value, color=labels ) + no_x_labels +
+      labs(color="Legend") + xlab("group") + ylab("MaxS")
+
+# MaxS metrics show unexpected results for TcdB at 100 ng/ml
+# This plot shows that gdTcdB appears to have only been added to one of the four wells?
+# Regardless, gdTcdB clearly delayed TcdB at 10 ng/ml
+aa = retrieveWells(t.subset,compounds="TcdB",max.concentrations=101,min.concentrations=99)
+p3 = plot(aa,xlim=c(-1,7),replicates=FALSE)
+
+grid.arrange(arrangeGrob(p1,p3,ncol=2),p2,nrow=2)
+@
+
+\subsection{CHO cells}
+
+\subsubsection{CHO.txt}
+
+<<cho_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file="CHO.txt")
+t.subset = normalize_toxin(subset,c(-2,Inf))
+p1 = plot( retrieveWells(t.subset,compounds="TcdA"), xlim=c(-1,40))
+p2 = plot( retrieveWells(t.subset,compounds="TcdB"), xlim=c(-1,20))
+grid.arrange(p1,p2,ncol=2)
+@
+
+\subsection{IMCE cells}
+
+\subsubsection{IMCE.txt}
+
+<<imce_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file="IMCE.txt")
+t.subset = normalize_toxin(subset,c(-2,Inf))
+p1 = plot( retrieveWells(t.subset,compounds="TcdA"), xlim=c(-1,80))
+p2 = plot( retrieveWells(t.subset,compounds="TcdB"), xlim=c(-1,80))
+grid.arrange(p1,p2,ncol=2)
+@
+
+\subsection{HUVECs}
+
+\subsubsection{HUVEC-a.txt and HUVEC-b.txt}
+
+<<huvec_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file=c("HUVEC-a.txt","HUVEC-b.txt"))
+t.subset = normalize_toxin(subset,c(-2,Inf))
+p1 = plot( retrieveWells(t.subset,compounds="TcdA"), xlim=c(-1,20))
+p2 = plot( retrieveWells(t.subset,compounds="TcdB"), xlim=c(-1,20))
+grid.arrange(p1,p2,ncol=2)
+@
+
+\subsection{T84 cells}
+
+\subsubsection{T84-a.txt and T84-b.txt}
+
+<<t84_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file=c("T84-a.txt","T84-b.txt"))
+t.subset = normalize_toxin(subset,c(-2,Inf))
+p1 = plot( retrieveWells(t.subset,compounds="TcdA"), xlim=c(-1,20))
+p2 = plot( retrieveWells(t.subset,compounds="TcdB"), xlim=c(-1,20))
+grid.arrange(p1,p2,ncol=2)
+@
+
+\subsection{J774 cells}
+
+\subsubsection{J774-a.txt and J774-b.txt}
+
+<<j774_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file=c("J774-a.txt","J774-b.txt"))
+t.subset = normalize_toxin(subset,c(-2,Inf))
+p1 = plot( retrieveWells(t.subset,compounds="TcdA"), xlim=c(-1,40))
+p2 = plot( retrieveWells(t.subset,compounds="TcdB"), xlim=c(-1,40))
+grid.arrange(p1,p2,ncol=2)
+@
+
+\subsubsection{J774-2.txt}
+
+<<j774-2_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file="J774-2.txt")
+t.subset = normalize_toxin(subset,c(-2,Inf))
+p1 = plot( t.subset, xlim=c(-1,40))
+p2 = plot( t.subset, xlim=c(-1,5))
+grid.arrange(p1,p2,ncol=2)
+@
+
+\subsubsection{J774-3a.txt and J774-3b.txt}
+
+<<j774-3_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file=c("J774-3a.txt","J774-3b.txt"))
+t.subset = normalize_toxin(subset,c(-2,Inf))
+p1 = plot( t.subset, xlim=c(-1,24))
+p2 = plot( t.subset, xlim=c(-1,5))
+grid.arrange(p1,p2,ncol=2)
+@
+
+\subsubsection{J774-4.txt}
+
+<<j774-4_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file="J774-4.txt")
+t.subset = normalize_toxin(subset,c(-2,Inf))
+p1 = plot( t.subset, xlim=c(-1,48))
+p2 = plot( t.subset, xlim=c(-1,5))
+grid.arrange(p1,p2,ncol=2)
+@
+
+\subsubsection{J774-5.txt}
+
+<<j774-5_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file="J774-5.txt")
+t.subset = normalize_toxin(subset,c(-2,Inf))
+p1 = plot( t.subset, xlim=c(-1,48))
+p2 = plot( t.subset, xlim=c(-1,5))
+grid.arrange(p1,p2,ncol=2)
+@
+
+
+\subsection{PMN leukocytes}\label{S:PMNs}
+
+Consistent response profiles of PMNs to TcdA or TcdB could not be obtained.
+
+\subsubsection{PMN-2a.txt and PMN-2b.txt}
+
+Only TcdA at 1,000 ng/ml was clearly different than control cells. Instead of
+normalizing the impedance at the time toxin was added, the change in impedance
+from the time of toxin addition is shown.
+
+<<pmn-2_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file=c("PMN-2a.txt","PMN-2b.txt"))
+t.subset = transform( subset, c("tcenter","slice","level"),xlim=c(-2,Inf),ID="toxinAdd")
+p1 = plot( retrieveWells(t.subset,compounds="TcdA"), xlim=c(-1,24))
+p2 = plot( retrieveWells(t.subset,compounds="TcdB"), xlim=c(-1,24))
+grid.arrange(p1,p2,ncol=2)
+@
+
+
+\subsubsection{PMN-a.txt and PMN-b.txt}
+Cells were seeded in the presence of 100 ng/ml (9.01 nM) of human recombinant IL-8 in
+an attempt to increase impedance before adding toxin.
+
+<<pmn_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file=c("PMN-a.txt","PMN-b.txt"))
+t.subset = transform( subset, c("tcenter","slice","level"),xlim=c(-2,Inf),ID="toxinAdd")
+p1 = plot( retrieveWells(t.subset,compounds="TcdA"), xlim=c(-1,24))
+p2 = plot( retrieveWells(t.subset,compounds="TcdB"), xlim=c(-1,24))
+grid.arrange(p1,p2,ncol=2)
+@
+
+\subsubsection{PMN-3.txt}
+Cells were seeded in the presence of 25 nM (277.45 ng/ml) of IL-8.
+
+<<pmn-3_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file="PMN-3.txt")
+t.subset = transform( subset, c("tcenter","slice","level"),xlim=c(-2,Inf),ID="toxinAdd")
+p1 = plot( retrieveWells(t.subset,compounds="TcdA"), xlim=c(-1,48), replicates=FALSE)
+p2 = plot( retrieveWells(t.subset,compounds="TcdB"), xlim=c(-1,48), replicates=FALSE)
+grid.arrange(p1,p2,ncol=2)
+@
+
+\subsubsection{PMN-4.txt}
+Cells were seeded in the presence of 25 nM (277.45 ng/ml) of IL-8. The
+machine temporarily stopped making impedance measurements from approximately
+five to 20 hours.
+
+<<pmn-4_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
+subset = retrieveWells(wells,file="PMN-4.txt")
+t.subset = transform( subset, c("tcenter","slice","level"),xlim=c(-2,Inf),ID="toxinAdd")
+p1 = plot( retrieveWells(t.subset,compounds="TcdA"), xlim=c(-1,48))
+p2 = plot( retrieveWells(t.subset,compounds="TcdB"), xlim=c(-1,48))
+grid.arrange(p1,p2,ncol=2)
+@
+
+
+\subsection{Plate Layouts}\label{S:plateLayouts}
+
+Below are the layouts of all of the plates used.
+
+<<plate-layouts, results="asis">>=
+fwells = split(wells, getfiles(wells))
+fwells = fwells[sort(names(fwells))]
+
+options(xtable.print.results=FALSE)
+fwt = lapply(fwells, well_table, ID="toxinAdd")
+lt = lapply(fwt, print_well_table, scalebox=0.6, floating=FALSE)
+
+do.call( cat, c("\\begin{adjustwidth}{0in}{3in}{",lt,"} \\end{adjustwidth}") )
+@
+
+
+%\printbibliography
+
+\end{document}
+
