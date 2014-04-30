@@ -1,7 +1,7 @@
 # A library of functions for processing multi-well data
 source("./Scripts2/library.R")
 source("./Scripts2/latexLibrary.R")
-wells = parse.RTCAanalyze( metadata="./MasterSheet2.csv", data.dir="./Data2" )
+wells = parse.RTCAanalyze( metadata="./Annotations.csv", data.dir="./Data" )
 
 
 ###### Panel A

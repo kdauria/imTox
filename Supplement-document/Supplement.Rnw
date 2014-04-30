@@ -142,6 +142,20 @@ the variability in these primarily non-adherent cells (impedance
 largely measures adherence) was too high to identify 
 differences (Supplement).''
 
+\subsection{ Reference 3 }
+
+``TEXT TO BE ADDED``
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{Supplement-document/FigS1.pdf}
+  \caption[gdTcdB added to HCT8 cells]{
+       \textbf{gdTcdB added to HCT8 cells}
+  }
+  \label{figs1}
+\end{figure}
+
+
 See \ref{S:PMNs}
 
 \section{ Reproducing Figures }\label{S:ReFig}
