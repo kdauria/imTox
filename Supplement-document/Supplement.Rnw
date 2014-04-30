@@ -104,7 +104,7 @@ PDF creation to produce the figures and output shown. Thus, the analyses can
 be repeated by downloading the source of this document (with the data) or copy-pasting
 all of the code into one's own R console.
 
-\section{ References from manuscript }\label{S:ReFig}
+\section{ References from manuscript }
 
 \subsection{ Reference 1 }
 
@@ -112,7 +112,7 @@ all of the code into one's own R console.
 and TcdB (10 ng/ml) diverged from controls in 10 and 20 minutes, 
 respectively (Supplement).''
 
-<<libraries, tidy=TRUE, cache=FALSE, echo=FALSE>>=
+<<libraries, tidy=TRUE, echo=FALSE>>=
 # A library of functions for processing multi-well data
 source("./Scripts2/library.R")
 
@@ -121,7 +121,7 @@ source("./Scripts2/library.R")
 source("./Scripts2/latexLibrary.R")
 @
 
-<<loadData, tidy=TRUE, cache=TRUE, echo=FALSE>>=
+<<loadData, tidy=TRUE, echo=FALSE>>=
 # Parse and load the data
 wells = parse.RTCAanalyze( metadata="./Annotations.csv", data.dir="./Data" )
 @
@@ -146,9 +146,9 @@ differences (Supplement).''
 
 ``TEXT TO BE ADDED``
 
-\begin{figure}
+\begin{figure}[h!]
   \centering
-  \includegraphics[width=\textwidth]{Supplement-document/FigS1.pdf}
+  \includegraphics[width=\textwidth]{FigS1.jpg}
   \caption[gdTcdB added to HCT8 cells]{
        \textbf{gdTcdB added to HCT8 cells}
   }
@@ -329,7 +329,7 @@ grid.arrange(p1,p2,p3,ncol=2)
 
 \subsection{ Figure 5 }
 
-<<Figure5, tidy=FALSE, fig.width=7.5, fig.height=4.5>>=
+<<FigureS1, tidy=FALSE, fig.width=7.5, fig.height=4.5>>=
 ##### Panel A
 subset = retrieveWells(wells, file = "J774-4.txt")
 t.subset = normalize_toxin(subset, xlim = c(-2, Inf))
