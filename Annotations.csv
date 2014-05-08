@@ -211,6 +211,29 @@ J774-5.txt	A-H1-2	start	0	1	0	100	-	-	-
 	F1-2						gdTcdB	10			
 	G1-2						gdTcdB	100			
 	H1-2						-	-	-		
+J774-6.txt	A-H1-6	start	0	1	0	90	-	-	-		
+	A-H1-6	cellSeed	2	3	0	90	J774	50000	total		
+	D-H1	toxinAdd	1189	1190	0	20	TcdA	0.1, 1, 10, 100, 1000	final		
+	D-H2		1192	1193							
+	D-H3		1194	1195			TcdB				
+	D-H4		1197	1198							
+	F-H5		1200	1201			gdTcdB	1, 10, 100			
+	F-H6		1203	1204							
+	A1-6		1189, 1192, 1194, 1197, 1200, 1203	1190, 1193, 1195, 1198, 1201, 1204			-	-	-		
+	B1-2		1189, 1192	1190, 1193			gdTcdB	10	final		
+	C1-2		1189, 1192	1190, 1193			TcdA	1			
+							gdTcdB	10			
+	C3-4		1194, 1197	1195, 1198			TcdB	0.1			
+							gdTcdB	10			
+	B3-4						TcdB	0.1			
+							gdTcdB	1			
+	B5-6		1200, 1203	1201, 1204			gdTcdB	100			
+	E5-6						TcdA	1			
+							gdTcdB	10			
+	D5-6						TcdB	0.1			
+							gdTcdB	10			
+	C5-6						TcdB	0.1			
+							gdTcdB	1			
 PMN-a.txt	A-H1-2	start	0	1	0	100	-	-	-		
 	A-H1-2	cellSeed	2	3	0	100	PMN	360000	total		
 							IL8	222.22	start		
