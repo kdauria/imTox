@@ -252,15 +252,19 @@ groupWells = function( wells, group="none", ID="final", ... ) {
   if(group=="by.mass") f = factorWells( wells, by="mass", ID=ID, ... )
   
   # by the compounds in the well
-  compOptions = c("by.all.compounds","by.compounds","by.total.compounds" )
+  compOptions = c("by.all.compounds","by.compounds","by.total.compounds","by.all.compounds.wconc" )
   if( group %in% compOptions )  {
     
     # which type of compounds?
     solns = getsolutions(wells,ID)
     cmps = getcompounds(solns)
-    compTypes = c("all","start","total")
+    compTypes = c("all","start","total","all")
     type = compTypes[ compOptions==group ]
-    f = factorWells( wells, by="compounds", ID=ID, compoundType=type )
+    if( group=="by.all.compounds.wconc" ) {
+      f = factorWells( wells, by="compounds", ID=ID, compoundType=type, withConcs=TRUE )
+    } else {
+      f = factorWells( wells, by="compounds", ID=ID, compoundType=type )
+    }
   }
   
   # by concentrations (not total)
