@@ -1,85 +1,87 @@
-source("./Scripts2/library.R")
+rm(list=ls())
+detach("package:wellz", unload=TRUE)
+library(wellz)
+library(reshape)
+library(ggplot2)
+library(data.table)
 
 ################### Parse annotations and data
-
-f = parse.metadata.file(fpath="./Data/CCK8/Annotations.csv")
-a = df.to.actions(f$actions)
-wells = actions.to.wells( a )
-class(wells) = c("wellList","list")
-
-g = groupWells(wells,group="by.concentrations")
-
-# Read in the data file
-a = read.csv("./Data/CCK8/Absorbances.csv", sep="\t")
-dat = cast(a, hour ~ well, value="A" )
-
-# loop through the column of each data matrix, asssigning data to wells
-file = getfiles(wells)[1]
-for( j in 2:ncol(dat) ) {
-  
-  loc = expand.wells( colnames(dat)[j] )
-  idx = well.index(wells,loc,file)
-  data = as.matrix(as.data.frame(dat[,j,drop=FALSE]))
-  df = data.frame( sweep = 1:nrow(data), 
-                   time=dat$hour, 
-                   values=as.numeric(data))
-  if( is.na(idx) ) {
-    message(str_c("Well ",location," in file ",file, " is not in the protocol. Well skipped."))
-  } else {
-    wells[[idx]]$data = df
-  }
+my_parse_fun = function( fpath ) {
+  a = read.csv(fpath, sep="\t")
+  am = melt(a, measure.vars="A")
+  out = cast(am, hour~well )
+  out$i = 1:nrow(out)
+  colnames(out)[1] = "t"
+  out
 }
 
-#################### Look at the raw data
-ggmat = function(wells) {
-  groups = list(cond="by.concentrations",toxin="by.compounds")
-  mdat = melt.wellList.wgroups(wells,groupings=groups,ID="final")
-  mdat = mdat[order(mdat$cond,mdat$time),c("toxin","time","cond","value")]
-  mdat = na.omit(mdat)
-}
+x = parse_metadata(metadata="/Users/kd3jd/Desktop/imTox/Data/CCK8/Annotations.csv",
+                   data.dir="/Users/kd3jd/Desktop/imTox/Data/CCK8/",
+                   parse_fun = my_parse_fun, spline=FALSE)
 
-# Take a look at the raw absorbance data for CCK8
-p = ggplot(ggmat(wells),aes(x=factor(time),y=value)) + geom_point() + facet_wrap( ~ cond)
+############## Reorganize the data
+dat = melt_wellList(x)
+p = param_matrix(x)
+p$A.conc = group(x,"concentration",compound="A")
+p$B.conc = group(x,"concentration",compound="B")
+p$mB.conc = group(x,"concentration",compound="mB")
+p$names = group(x,"compound")
+p$tox.conc = p$A.conc + p$B.conc + p$mB.conc*as.numeric(p$names=="mB")
 
-subset = retrieveWells(wells,compounds=c("A","lysis","control"))
-p %+% ggmat(subset)
+p$comps = p$names
+temp = p$names; yn = p$names %in% c("A+mB","B+mB")
+p$comps[yn] = paste( p$names[yn], p$mB.conc[yn], sep="." )
 
-subset = retrieveWells(wells,compounds=c("B","lysis","control"))
-p %+% ggmat(subset)
+dat = dat[p]
 
-subset = retrieveWells(wells,compounds=c("mB","lysis","control"))
-p %+% ggmat(subset)
+############ Normalize the data
+# Subtract out the lysis values
+dat[, value := value-mean(.SD[names=="blank",value],na.rm=TRUE), by=t]
+
+# Normalize to the controls
+dat[, value := value/mean(.SD[names=="control",value],na.rm=TRUE), by=t]
+
+############  Plot the data
+p = ggplot(dat, aes(x=factor(log10(tox.conc)),y=value,fill=comps, color=comps)) + facet_wrap(~t) + 
+  stat_summary(fun.y="mean", geom="bar", position="dodge", alpha=0.4) +
+  geom_point(position=position_dodge(width=0.8))
+p
+
+############# Plot subsets of the data
+dat2 = dat[ dat$tox.conc>1, ]
+p %+% dat2
+
+dat3 = dat[ dat$tox.conc<=1, ]
+p %+% dat3
+
+########## The plotting is ugly because
+# position_dodge drops a bar if it isn't in one of the
+# factors on the x-axis. Therefore, I'm going to need to
+# calculate the summary statistics beforehand and then do the
+# plotting
+
+# What are the keys that separate the data values into groups?
+# tox.conc, comps, and t
+sum.stats = as.data.frame( dat[,mean(value),by=list(tox.conc,comps,t)] )
+sum.stats[order(sum.stats$t,sum.stats$comps),]
 
 
-############### Transform the data given the controls
-x = ggmat(wells)
+groups = with(sum.stats, interaction(comps,tox.conc,t))
+length( levels(factor(sum.stats$comps))) # 9
+length( levels(factor(sum.stats$tox.conc))) # 6
+length( levels(factor(sum.stats$t))) # 3
+# Meh this is possibly 9*6*3 = 162 groups. It makes
+# more sense to pick and choose what I want to show
+# because showing all is just too complicated
 
-# make a replicate # column
-allcond = interaction(x$time,x$cond)
-x$reps = unlist( mapply( seq, 1, rle(as.character(allcond))$lengths ) )
 
-# cast the data with one column per time point (#rows = #wells)
-y = cast(x, cond + reps + toxin ~ time )
 
-# sweep out the lysis buffer controls
-vc = 4:6 # value columns
-y[,vc] = sweep(y[,vc],2,colMeans( y[y$cond=="lysis-1",vc] ))
 
-# normalize to controls
-y[,vc] = sweep( y[,vc], 2, colMeans( y[y$cond=="control-1",vc] ), "/" )
 
-############## Plot the transformed data
-z = melt(y,measure.vars=c("1","4","24"))
-p %+% z
 
-a = z[ z$toxin %in% c("A","lysis","control"), ]
-p %+% a
 
-a = z[ z$toxin %in% c("B","lysis","control"), ]
-p %+% a
 
-a = z[ z$toxin %in% c("mB","lysis","control"), ]
-p %+% a
+
 
 
 
