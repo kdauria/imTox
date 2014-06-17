@@ -17,7 +17,16 @@ my_parse_fun = function( fpath ) {
 
 x = parse_metadata(metadata="/Users/kd3jd/Desktop/imTox/Data/CCK8/Annotations.csv",
                    data.dir="/Users/kd3jd/Desktop/imTox/Data/CCK8/",
-                   parse_fun = my_parse_fun, spline=FALSE)
+                   parse_fun = my_parse_fun, spline=TRUE)
+plot(x,replicates=TRUE, sd=FALSE, color="compound")
+
+# Normalize to controls and lysis values
+controls = cast(melt_wellList( select(x,"control") ), t~., fun.aggregate=mean )[,2]
+blanks = cast(melt_wellList( select(x,"blank") ), t~., fun.aggregate=mean )[,2]
+for( i in seq_along(x)) vdata(x[[i]]) = (vdata(x[[i]])-blanks)/(controls-blanks)
+x = add_spline(x) # need to update the spline whenever the data is modified
+plot(x,replicates=TRUE, sd=FALSE, color="compound")
+
 
 ############## Reorganize the data
 dat = melt_wellList(x)
@@ -34,12 +43,6 @@ p$comps[yn] = paste( p$names[yn], p$mB.conc[yn], sep="." )
 
 dat = dat[p]
 
-############ Normalize the data
-# Subtract out the lysis values
-dat[, value := value-mean(.SD[names=="blank",value],na.rm=TRUE), by=t]
-
-# Normalize to the controls
-dat[, value := value/mean(.SD[names=="control",value],na.rm=TRUE), by=t]
 
 ############  Plot the data
 p = ggplot(dat, aes(x=factor(log10(tox.conc)),y=value,fill=comps, color=comps)) + facet_wrap(~t) + 
