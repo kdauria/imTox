@@ -1,5 +1,5 @@
-rm(list=ls())
-detach("package:wellz", unload=TRUE)
+# rm(list=ls())
+# detach("package:wellz", unload=TRUE)
 library(wellz)
 library(reshape)
 library(ggplot2)
