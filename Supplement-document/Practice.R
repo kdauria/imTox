@@ -1,6 +1,8 @@
 # Redoing the Supplement to be cleaner and faster
 # Now with the wellz package
 library(ggplot2)
+library(stringr)
+library(data.table)
 library(gridExtra)
 library(wellz)
 wells = parse_metadata( metadata="./Annotations2.csv", 
@@ -42,55 +44,87 @@ subsets = lapply(files, function(f) select(wells, file = f))
 subsets = c(list(hct8), subsets)
 
 # Normalize each subset, slicing different sections of the data (xlims)
+# and add smoothers to each subset
 xlims = list(c(-0.1, 43), c(-1, Inf), c(-1, Inf), c(-1, 60), c(-1, 27))
-n.subsets = mapply(normalize_toxin, subsets, xlim = xlims)
-
-# Add a smoother to each subset
-s.subsets = mapply( add_smoother, n.subsets, rep(0.5,5) )
+n.subsets = Map(normalize_toxin, subsets, xlim = xlims)
+s.subsets = Map(add_smoother, n.subsets, method="composite", sp=c(1,1,1,1,1) )
 
 # Calculate ABC for each subset
-left = rep(0, 5)
-right = c(43, 40, 80, 80, 27)
-i.subsets = mapply(integrate, s.subsets, left, right)
-allwells = do.call(c, i.subsets)
+calculate_area = function(x, lower, upper, ...) {
+  area = area_under_curve(x, lower, upper, ID="toxinAdd")
+  area$compound = group(x, "compound")
+  area$celltype = group(x,"compound",type="total")
+  area$concentration = str_extract( group(x,"concentration", ...), "[0-9.]+" )
+  area$area = area$area - mean(area$area[ area$compound=="" ]) # subtract controls
+  area
+}
+lower = c( 0,  0,  0,  0,  0)
+upper = c(43, 40, 80, 80, 27)
+areas = Map( calculate_area, s.subsets, lower, upper, ID="toxinAdd" )
+areas.df = rbindlist(areas)
+
+# Calculate the maximum area under each 
+calculate_max_rate = function(x, ...) {
+  maxs = max_rate(x, ...)
+  maxs$compound = group(x,"compound")
+  maxs$celltype = group(x,"compound",type="total")
+  maxs$concentration = str_extract( group(x,"concentration", ID="toxinAdd"), "[0-9.]+" )
+  maxs
+}
+xlim = list( c(0,Inf), c(0,Inf), c(0,Inf), c(0,Inf), c(1,Inf))
+maxs = Map( calculate_max_rate, s.subsets, ID="toxinAdd", xlim=xlim)
+maxs.df = rbindlist(maxs)
+
+
+# Now work out why the rates aren't working well for the different
+# cell types. Need to plot the different results to do diagnostics
+x = add_smoother(n.subsets[[1]],method="composite",sp=0.5)
+params = max_rate(x, xlim=c(1,Inf), group=c("concentration","compound"), 
+                  ID="toxinAdd", direction="negative")
+check_rates(x,params,c(-1,30))
+
+# Function to look at the maximum rates of each curve
+# in the context of plots of the data and derivative of the data
+check_rates = function(x, params, xlim ) {
+  p1 = plot(x,color="concentration",shape="compound",
+       ID="toxinAdd", xlim=xlim, points=TRUE, smoother=TRUE) + 
+    geom_point(data=params, size=5) + 
+    geom_point(data=params, size=3, color="white") +
+    facet_wrap(~compound) + xlim(xlim)
+  p2 = plot(x,color="concentration",shape="compound", deriv=1,
+       ID="toxinAdd", xlim=xlim, points=FALSE, smoother=TRUE) + 
+    geom_point(data=params,aes(y=rate-0.1*diff(range(params$rate))),size=5) + 
+    geom_point(data=params,aes(y=rate-0.1*diff(range(params$rate))),size=3, color="white") +
+    facet_wrap(~compound) + xlim(xlim)
+  grid.arrange(p1,p2,nrow=2)
+}
 
 
 
 
 
 
+########## Area beneath curve for all cell types
+ggplot(areas.df, aes(x=as.numeric(concentration),y=area,color=compound)) + 
+  geom_point() + scale_x_log10() +
+  geom_hline( data=areas.df[areas.df$compound==""], 
+              aes(yintercept=area,color=compound), linetype="dashed" ) + # controls
+  facet_wrap(~celltype, scale="free") +
+  xlab("Concentration (ng/ml)")
+
+########## MaxS for all cell types
+ggplot(maxs.df, aes(x=as.numeric(concentration),y=rate,color=compound)) + 
+  geom_point() + scale_x_log10() +
+  geom_hline( data=maxs.df[maxs.df$compound==""], 
+              aes(yintercept=rate,color=compound), linetype="dashed" ) + # controls
+  facet_wrap(~celltype, scale="free") +
+  xlab("Concentration (ng/ml)")
 
 
 
-#### Since this figure includes data from multiple experiments and files,
-#### they must all be processed first
-
-# Only select wells seeded with at most 6,000 HCT8 cells
-hct8 = retrieveWells(wells, file = "HCT8.txt", compounds = "HCT8", max.concentrations = 6000)
-
-# The rest of the wells come from these files
-files = list( "CHO.txt", "IMCE.txt", c("HUVEC-a.txt","HUVEC-b.txt"), 
-              c("T84-a.txt","T84-b.txt"))
-subsets = lapply(files, function(f) retrieveWells(wells, file = f))
 
 
-# Normalize each subset
-xlims = list(c(-0.1, 43), c(-1, Inf), c(-1, Inf), c(-1, 60), c(-1, 27))
-n.subsets = mapply(normalize_toxin, subsets, xlim = xlims)
 
-# Add a smoother to each subset
-x.scales = c( 2/3, 1, 1, 2/3, 2/3 )
-s.subsets = mapply( smoother_toxin, n.subsets, x.scale=x.scales )
-
-# Calculate ABC for each subset (with different integration limits)
-left = rep(0, 5)
-right = c(43, 40, 80, 80, 27)
-i.subsets = mapply(integrate, s.subsets, left, right)
-allwells = do.call(c, i.subsets)
-
-# Calculate MaxS for each well
-allwells = max.rate(allwells, ID = "toxinAdd", min.diff = 10/60/60, 
-                    ylim = 0.8, xlim = 2)
 
 
 
