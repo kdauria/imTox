@@ -47,14 +47,18 @@ subsets = c(list(hct8), subsets)
 # and add smoothers to each subset
 xlims = list(c(-0.1, 43), c(-1, Inf), c(-1, Inf), c(-1, 60), c(-1, 27))
 n.subsets = Map(normalize_toxin, subsets, xlim = xlims)
-s.subsets = Map(add_smoother, n.subsets, method="composite", sp=c(1,1,1,1,1) )
+s.subsets = Map(add_smoother, n.subsets, method="composite2",
+                w=c(2,1,1,3,3),
+                global.change=c(1.5,1,1,1,1),
+                max.knots=c(20,10,10,12,12))
 
 # Calculate ABC for each subset
 calculate_area = function(x, lower, upper, ...) {
   area = area_under_curve(x, lower, upper, ID="toxinAdd")
   area$compound = group(x, "compound")
   area$celltype = group(x,"compound",type="total")
-  area$concentration = str_extract( group(x,"concentration", ...), "[0-9.]+" )
+  area$concentration = str_extract( group(x,"concentration", ...), 
+                                    "[0-9.e]+[-]?[0-9]?[0-9]?" )
   area$area = area$area - mean(area$area[ area$compound=="" ]) # subtract controls
   area
 }
@@ -68,20 +72,94 @@ calculate_max_rate = function(x, ...) {
   maxs = max_rate(x, ...)
   maxs$compound = group(x,"compound")
   maxs$celltype = group(x,"compound",type="total")
-  maxs$concentration = str_extract( group(x,"concentration", ID="toxinAdd"), "[0-9.]+" )
+  maxs$concentration = str_extract( group(x,"concentration", ID="toxinAdd"), 
+                                    "[0-9.e]+[-]?[0-9]?[0-9]?" )
   maxs
 }
-xlim = list( c(0,Inf), c(0,Inf), c(0,Inf), c(0,Inf), c(1,Inf))
-maxs = Map( calculate_max_rate, s.subsets, ID="toxinAdd", xlim=xlim)
+xlim = list( c(0.1,30), c(0.1,30), c(0.1,30), c(0.2,30), c(0.2,30))
+maxs = Map( calculate_max_rate, s.subsets, ID="toxinAdd", 
+            xlim=xlim, direction="negative")
 maxs.df = rbindlist(maxs)
 
-
-# Now work out why the rates aren't working well for the different
-# cell types. Need to plot the different results to do diagnostics
-x = add_smoother(n.subsets[[1]],method="composite",sp=0.5)
-params = max_rate(x, xlim=c(1,Inf), group=c("concentration","compound"), 
+# Why are these different?
+params = max_rate(s.subsets[[4]], xlim=c(0.2,30), group=c("concentration","compound"), 
                   ID="toxinAdd", direction="negative")
-check_rates(x,params,c(-1,30))
+maxs[[4]]
+
+
+
+######## HCT8 are working well now
+x = add_smoother(n.subsets[[1]],method="composite2",
+                 w=2,max.knots=20,global.change=1.5)
+params = max_rate(x, xlim=c(1,30), group=c("concentration","compound"), 
+                  ID="toxinAdd", direction="negative")
+params$concentration = as.numeric(str_extract(params$concentration,"[0-9.]+"))
+ggplot(params, aes(x=log10(concentration),y=rate,color=compound)) + geom_point()
+check_rates(x,params,c(-1,2))
+
+
+
+######## CHO is working well now
+x = n.subsets[[2]]
+for( i in 1:length(x)) {
+  x[[i]] = add_smoother(x[[i]], method="composite2", w=1, max.knots=10, global.change=1)
+}
+params = max_rate(x, xlim=c(0.1,30), group=c("concentration","compound"), 
+                  ID="toxinAdd", direction="negative")
+params$concentration = as.numeric(str_extract(params$concentration,"[0-9.e]+[-]?[0-9]?[0-9]?"))
+ggplot(params, aes(x=log10(concentration),y=rate,color=compound)) + geom_point() +
+   facet_wrap(~compound)
+check_rates(x,params,c(-1,20))
+
+######## IMCE is working well now
+x = n.subsets[[3]]
+for( i in 1:length(x)) {
+  x[[i]] = add_smoother(x[[i]], method="composite2", w=1, max.knots=10, global.change=1)
+}
+params = max_rate(x, xlim=c(0.1,30), group=c("concentration","compound"), 
+                  ID="toxinAdd", direction="negative")
+check_rates(x,params,c(-1,20))
+
+######## HUVEC cells working now
+x = n.subsets[[4]]
+#x = select( n.subsets[[4]], "TcdB[100-1000] | TcdA[300-1000]", controls=TRUE)
+for( i in 1:length(x)) {
+  x[[i]] = add_smoother(x[[i]], method="composite2", w=3, max.knots=12, global.change=1)
+}
+params = max_rate(x, xlim=c(0.2,30), group=c("concentration","compound"), 
+                  ID="toxinAdd", direction="negative")
+params$concentration = as.numeric(str_extract(params$concentration,"[0-9.e]+[-]?[0-9]?[0-9]?"))
+params$concentration = factor(params$concentration)
+ggplot(params, aes(x=log10(as.numeric(as.character(concentration))),y=rate,color=compound)) + geom_point() +
+  facet_wrap(~compound)
+check_rates(x,params,c(0,1))
+check_rates(x,params,c(0,5))
+
+
+
+######## T84 cells working now
+x = n.subsets[[5]]
+for( i in 1:length(x)) {
+  x[[i]] = add_smoother(x[[i]], method="composite2", w=3, max.knots=12, global.change=1)
+}
+params = max_rate(x, xlim=c(0.2,30), group=c("concentration","compound"), 
+                  ID="toxinAdd", direction="negative")
+check_rates(x,params,c(0,5))
+check_rates(x,params,c(0,30))
+
+
+
+
+
+
+
+# Here is where the error is. There is a problem
+# I think when their is missing data points yet there
+# are knots? I'll need to look at this specific case
+# in more detail
+aa= select(x,"TcdB[500]", ID="toxinAdd")[[1]]
+plot( aa, xlim=c(-5,3), 
+      points=TRUE, smoother=TRUE )
 
 # Function to look at the maximum rates of each curve
 # in the context of plots of the data and derivative of the data
@@ -99,8 +177,8 @@ check_rates = function(x, params, xlim ) {
   grid.arrange(p1,p2,nrow=2)
 }
 
-
-
+aa = wdata( select(x, "TcdB[500]", ID="toxinAdd")[[1]] )
+write.table(aa,file="/Users/kd3jd/Desktop/testdatac.txt")
 
 
 
