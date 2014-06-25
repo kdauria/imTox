@@ -34,3 +34,4 @@ calculate_max_rate = function(x, ...) {
   maxs
 }
 
+select = function(...) wellz::select(...,controls=TRUE)

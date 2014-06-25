@@ -12,8 +12,8 @@ plot(subset, xlim=c(0,48), color="concentration", type="total",
 
 # Then a concentration-response experiment was performed on the
 # wells seeded with 5,000 cells
-A = normalize_toxin( select(subset, "HCT8[5000] & TcdA", controls=TRUE ) )
-B = normalize_toxin( select(subset, "HCT8[5000] & TcdB", controls=TRUE ) )              
+A = normalize_toxin( select(subset, "HCT8[5000] & TcdA"))
+B = normalize_toxin( select(subset, "HCT8[5000] & TcdB"))              
 plotA = plot(A, color="concentration", ID="toxinAdd", xlim=c(-1,10) )
 plotB = plot(B, color="concentration", ID="toxinAdd", xlim=c(-1,10) ) 
 grid.arrange(plotA, plotB, nrow=1)  
@@ -22,57 +22,103 @@ grid.arrange(plotA, plotB, nrow=1)
 # Experiments with gdTcdB+TcdA and gdTcdB+TcdB were done
 # to investigate any possible competition
 subset = normalize_toxin(select(wells, file=c("HCT8-2a.txt","HCT8-2b.txt")), xlim=c(-1,10))
-p1 = plot( select(subset, "gdTcdB & !(TcdA | TcdB)", controls=TRUE), 
-           color="concentration", replicates=TRUE ) + ylim(c(0,1.2)) + ggtitle("gdTcdB")
-p2 = plot( select(subset, "TcdA", controls=TRUE), 
-           color="concentration", replicates=TRUE ) + ylim(c(0,1.2)) + ggtitle("TcdA")
-p3 = plot( select(subset, "TcdB", controls=TRUE), 
-           color="concentration", replicates=TRUE ) + ylim(c(0,1.2)) + ggtitle("TcdB")
+tox_plot = function(x, replicates=TRUE) {
+  plot(x, color="concentration", replicates=replicates) + ylim(c(0,1.2))
+}
+p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
+p2 = tox_plot( select(subset, "TcdA")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
 grid.arrange(p1, p2, p3, nrow=2)
-
-
-
-p1 = plot(subset, color="concentration", xlim=c(-1,4), replicates=TRUE)
-
-# The maximum rate of the curves
-subset = add_smoother( subset, method="composite2", w=2, max.knots=15, global.change=1.2 )
-pgon = rbind( c(0,-10), c(0,0.85), c(2.5,0.85), c(2.5,100), c(100,100), c(100,-10), c(0,-10) )
-maxs = calculate_max_rate( subset, xlim=c(0.2,30), direction="negative", pgon=pgon)
-maxs$concentration = group(subset,"concentration")
-p2 = ggplot(maxs,aes(x=concentration,y=rate, color=concentration)) + geom_point()
-grid.arrange(p1,p2,nrow=1)
 
 # HCT8-3.txt
+# Similar experiments were repeated at different concentrations
 subset = normalize_toxin( select(wells, "TcdA | TcdB | gdTcdB", 
-                                 file="HCT8-3.txt", controls=TRUE), xlim=c(-2,10) )
-p1 = plot( select(subset, "gdTcdB & !(TcdA | TcdB)", controls=TRUE), 
-           color="concentration", replicates=TRUE ) + ylim(c(0,1.2)) + ggtitle("gdTcdB")
-p2 = plot( select(subset, "TcdA", controls=TRUE), 
-           color="concentration", replicates=TRUE ) + ylim(c(0,1.2)) + ggtitle("TcdA")
-p3 = plot( select(subset, "TcdB", controls=TRUE), 
-           color="concentration", replicates=TRUE ) + ylim(c(0,1.2)) + ggtitle("TcdB")
+                                 file="HCT8-3.txt"), xlim=c(-1,10) )
+p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
+p2 = tox_plot( select(subset, "TcdA")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
 grid.arrange(p1, p2, p3, nrow=2)
 
+# HCT8-4.txt
+# Again, similar experiments were performed
+subset = normalize_toxin( select(wells, file="HCT8-4.txt"), xlim=c(-1,12) )
+p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
+p2 = tox_plot( select(subset, "TcdA[100]")) + ggtitle("TcdA 100 ng/ml")
+p3 = tox_plot( select(subset, "TcdA[1000]")) + ggtitle("TcdA 1000 ng/ml")
+p4 = tox_plot( select(subset, "TcdB[10]")) + ggtitle("TcdB 10 ng/ml")
+p5 = tox_plot( select(subset, "TcdB[100]")) + ggtitle("TcdB 100 ng/ml")
+p6 = tox_plot( select(subset, "TcdB[100]"), replicates=FALSE) + ggtitle("TcdB 100 ng/ml")
+grid.arrange(p1, p2, p3, p4, p5, p6, nrow=3)
+
+
+# CHO.txt
+subset = normalize_toxin(select(wells, file="CHO.txt"))
+p1 = plot(select(subset, "TcdA"), xlim=c(-1,20), color="concentration") + ggtitle("TcdA")
+p2 = plot(select(subset, "TcdB"), xlim=c(-1,10), color="concentration") + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
+
+# IMCE.txt
+subset = normalize_toxin(select(wells, "IMCE"))
+p1 = plot(select(subset, "TcdA"), color="concentration", xlim=c(-1,20), replicates=TRUE) + ggtitle("TcdA")
+p2 = plot(select(subset, "TcdB"), color="concentration", xlim=c(-1,20), replicates=TRUE) + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
+
+# HUVEC-a.txt & HUVEC-b.txt
+subset = normalize_toxin(select(wells, "T84"))
+p1 = plot(select(subset, "TcdA"), color="concentration", xlim=c(-1,20)) + ggtitle("TcdA")
+p2 = plot(select(subset, "TcdB"), color="concentration", xlim=c(-1,20)) + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
+
+# J774-a.txt & J774-b.txt
+subset = normalize_toxin(select(wells, file=c("J774-a.txt","J774-b.txt")))
+p1 = plot(select(subset,"TcdA"), xlim=c(-1,40), replicates=TRUE, color="concentration") + ggtitle("TcdA")
+p2 = plot(select(subset,"TcdB"), xlim=c(-1,40), replicates=TRUE, color="concentration") + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
+
+# J774-2.txt
+subset = normalize_toxin(select(wells, file="J774-2.txt"))
+plot(subset, replicates=TRUE, xlim=c(-1,24), color="concentration")
+
+# J774-3.txt
+subset = normalize_toxin(select(wells, file=c("J774-3a.txt","J774-3b.txt")))
+tox_plot = function(x, replicates=TRUE) plot(x, color="concentration", replicates=TRUE, xlim=c(-1,10))
+p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
+p2 = tox_plot( select(subset, "TcdA")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, nrow=2)
+
+# J774-4.txt
+subset = normalize_toxin(select(wells, file="J774-4.txt"))
+tox_plot = function(x, replicates=TRUE) plot(x, color="concentration", replicates=TRUE, xlim=c(-1,24))
+p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
+p2 = tox_plot( select(subset, "TcdA")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, nrow=2)
+
+# J774-5.txt
+subset = normalize_toxin(select(wells, file="J774-5.txt"))
+tox_plot = function(x, replicates=TRUE) plot(x, color="concentration", replicates=TRUE, xlim=c(-1,24))
+p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
+p2 = tox_plot( select(subset, "TcdA")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, nrow=2)
+
+# J774-6.txt
+subset = normalize_toxin(select(wells, file="J774-6.txt"))
+tox_plot = function(x, replicates=TRUE, xlim=c(-1,24)) 
+  plot(x, color="concentration", replicates=TRUE, xlim=xlim)
+p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
+p2 = tox_plot( select(subset, "TcdA[1]")) + ggtitle("TcdA 1 ng/ml")
+p3 = tox_plot( select(subset, "TcdA & !TcdA[10] & !gdTcdB")) + ggtitle("TcdA")
+p4 = tox_plot( select(subset, "TcdB[0.1]"), xlim=c(0,5)) + ggtitle("TcdB 0.1 ng/ml")
+p5 = tox_plot( select(subset, "TcdB & !gdTcdB")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, p4, p5, nrow=3)
+
+## Next is PMNs
 
 
 
 
 
-x = select( subset, "gdTcdB[100-1000] & !(TcdA | TcdB)", controls=TRUE)
-pgon = rbind( c(0,-10), c(0,0.85), c(2.5,0.85), c(2.5,100), c(100,100), c(100,-10), c(0,-10) )
-params = calculate_max_rate( x, xlim=c(0.2,30), direction="negative", pgon=pgon)
-check_rates(x, params, c(0,10))
 
-check_rates = function(x, params, xlim ) {
-  p1 = plot(x,color="concentration",shape="compound",
-            ID="toxinAdd", xlim=xlim, points=TRUE, smoother=TRUE) + 
-    geom_point(data=params, size=5) + 
-    geom_point(data=params, size=3, color="white") +
-    facet_wrap(~compound) + xlim(xlim)
-  p2 = plot(x,color="concentration",shape="compound", deriv=1,
-            ID="toxinAdd", xlim=xlim, points=FALSE, smoother=TRUE) + 
-    geom_point(data=params,aes(y=rate-0.1*diff(range(params$rate))),size=5) + 
-    geom_point(data=params,aes(y=rate-0.1*diff(range(params$rate))),size=3, color="white") +
-    facet_wrap(~compound) + xlim(xlim)
-  grid.arrange(p1,p2,nrow=2)
-}
+
