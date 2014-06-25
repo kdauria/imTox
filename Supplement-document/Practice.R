@@ -2,7 +2,6 @@
 source("./Figures/loadData.R")
 
 
-
 # HCT8.txt
 # A cell number titration was used to determine the number
 # of cells and time to reach maximum impedance.
@@ -105,8 +104,8 @@ grid.arrange(p1, p2, p3, nrow=2)
 
 # J774-6.txt
 subset = normalize_toxin(select(wells, file="J774-6.txt"))
-tox_plot = function(x, replicates=TRUE, xlim=c(-1,24)) 
-  plot(x, color="concentration", replicates=TRUE, xlim=xlim)
+tox_plot = function(x, replicates=TRUE, xlim=c(-1,24), ...) 
+  plot(x, color="concentration", replicates=replicates, xlim=xlim, ...)
 p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
 p2 = tox_plot( select(subset, "TcdA[1]")) + ggtitle("TcdA 1 ng/ml")
 p3 = tox_plot( select(subset, "TcdA & !TcdA[10] & !gdTcdB")) + ggtitle("TcdA")
@@ -115,10 +114,42 @@ p5 = tox_plot( select(subset, "TcdB & !gdTcdB")) + ggtitle("TcdB")
 grid.arrange(p1, p2, p3, p4, p5, nrow=3)
 
 ## Next is PMNs
+# PMN-2a.txt & PMN-2b.txt
+subset = select(wells, file=c("PMN-2a.txt", "PMN-2b.txt"))
+subset2 = transform(subset, c("tcenter","level"), ID="toxinAdd")
+p1 = tox_plot( select(subset2, "TcdA")) + ggtitle("TcdA")
+p2 = tox_plot( select(subset2, "TcdB")) + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
 
+# PMN-a.txt & PMN-b.txt
+subset = select(wells, file=c("PMN-a.txt","PMN-b.txt"))
+subset2 = transform(subset, c("tcenter","level"), ID="toxinAdd")
+p1 = tox_plot( select(subset2, "!TcdB")) + ggtitle("TcdA")
+p2 = tox_plot( select(subset2, "!TcdA"), xlim=c(-1,10)) + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
 
+# PMN-3.txt
+subset = select(wells, file="PMN-3.txt")
+subset2 = transform(subset, c("tcenter","level"), ID="toxinAdd")
+p1 = tox_plot( select(subset2, "(TcdA & IL8) | (IL8 & !TcdA & !TcdB)")) + ggtitle("TcdA+IL8")
+p2 = tox_plot( select(subset2, "TcdA & !IL8")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset2, "(TcdB & IL8) | (IL8 & !TcdA & !TcdB)"), replicates=FALSE) + ggtitle("TcdB+IL8")
+p4 = tox_plot( select(subset2, "TcdB & !IL8")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, p4, nrow=2)
 
+# PMN-4.txt
+subset = select(wells, file="PMN-4.txt")
+subset2 = transform(subset, c("tcenter","level"), ID="toxinAdd")
+p1 = tox_plot( select(subset2, "(TcdA & IL8) | (IL8 & !TcdA & !TcdB)")) + ggtitle("TcdA+IL8")
+p2 = tox_plot( select(subset2, "TcdA & !IL8")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset2, "(TcdB & IL8) | (IL8 & !TcdA & !TcdB)"), replicates=FALSE) + ggtitle("TcdB+IL8")
+p4 = tox_plot( select(subset2, "TcdB & !IL8")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, p4, nrow=2)
 
+# LaTeX tables
+fwells = split(wells, filename(wells))
+fwells = fwells[sort(names(fwells))]
+lapply( fwells, latex_layout )
 
 
 

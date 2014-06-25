@@ -1,41 +1,15 @@
-# Custom latex.table.by function
-latex.table.by = function (df, num.by.vars = 1, hline=NULL, ...) 
-{
-  require(xtable)
-  if (!is.numeric(num.by.vars) | length(num.by.vars) != 1) {
-    stop("num.by.vars must be a number")
-  }
-  by.vars = 1:num.by.vars
-  numcols = length(colnames(df))
-  df.original = df
-  clines = rep(num.by.vars + 1, length(df[[1]]))
-  for (b in rev(by.vars)) {
-    groups = rep("", length(df[[b]]))
-    for (by.vars.index in 1:b) {
-      groups = paste(groups, df.original[[by.vars.index]], 
-                     sep = "")
-    }
-    df[[b]] <- as.character(df[[b]])
-    rle.lengths <- rle(groups)$lengths
-    first <- !duplicated(groups)
-    df[[b]][!first] <- ""
-    df[[b]][first] <- paste("\\multirow{", rle.lengths, "}{*}{", 
-                            df[[b]][first], "}")
-    clines[first] = b
-  }
-  
-  # hack to have partial horizontal lines
-  if( !is.null(hline) ) {
-    df[hline,1] <- paste("\\cline{", clines[hline]+1, "-", numcols, "}", df[[1]][hline], 
-                     sep = "")
-  }
-  # hack to make the hlines not go up to the top row
-  for( i in 1:ncol(df) ) {
-    df[1,i] = str_c( "\\multicolumn{1}{c}{",df[1,i],"}")
-  }
-  
-  xt = xtable(df, ... )
+
+
+# function to separate the columns and rows from well names
+get_coords = function(x,...) UseMethod("get_coords",x)
+get_coords.character = function(x) {
+  row = str_extract(x,"[A-Za-z]+")
+  col = as.numeric(str_extract(x,"[0-9]+"))
+  return( data.frame(row=row,col=col,stringsAsFactors=FALSE) )
 }
+get_coords.well = function(x) get_coords(code(x))
+get_coords.wellList = function(x) ldply(x,get_coords)
+
 
 # A function to make a table of several wells according to 
 # the coordinates of the wells
@@ -43,63 +17,38 @@ well_table = function(x, ID, concs=TRUE, totals=FALSE, ... ) {
   
   # set up a data frame. One column for each attribute (e.g. concs or totals)
   out = get_coords(x)
-  if( concs ) {
-    conc.strings = compound_string(x,ID=ID,type="start")
-    out = cbind(out,conc.strings,stringsAsFactors=FALSE)
-  }
-  if( totals ) {
-    total.strings = compound_string(x,type="total")
-    out = cbind(out,total.strings,stringsAsFactors=FALSE)
-  }
-  strings = out[,3:ncol(out),drop=FALSE]
+  if( concs ) out$concs = group(x, "concentration", ID=ID)
+  if( totals ) out$totals = group(x, "compound", type="total")
   
-  # set up the matrix for the output
-  n.col = ncol(strings)
-  allrows = sort( unique(out$row) )
-  allcols = sort( unique(out$col) )
-  mat = matrix(NA,nrow=length(allrows)*n.col,ncol=length(allcols))
-  rownames(mat) = paste0( rep(allrows,each=n.col), 1:n.col )
-  colnames(mat) = allcols
+  # The string to put in each well...
+  out$string = paste2(out$concs, out$totals, sep=" + ")
   
-  # fill in the matrix
-  out = out[order(out$col,out$row), ]
-  for( i in 1:n.col ) {
-    string = strings[[i]]
-    for( j in 1:nrow(out) ) {
-      mat[ paste0(out$row[j],i), as.character(out$col[j]) ] = string[j]
-    }
-  }
-  fmat = data.frame( r=rep(allrows,each=n.col), mat, stringsAsFactors=FALSE )
-  fmat = rbind(c("",allcols),fmat) # make the top row the column name
-
+  # A matrix that will be displayed
+  mat = as.matrix( cast( out, row~col, value="string" ) )
+  
   # table options
-  rowcaption = paste( unique( getfiles(x) ) )
-  align = c("c","r","|",rep(c("c","|"),length(allcols)) )
+  rowcaption = paste(unique(filename(x)))
+  align = c("r","r","|",rep(c("c","|"),ncol(mat)) )
+  hline = 0:(length(allrows)-1)
   
-  # Decide where the horizontal lines go
-  if( n.col==1 ) {
-    hline = 1:length(allrows) + 1
-  } else {
-    hline = (1:length(allrows))*n.col
-  }
+  # Make the xtable object
+  xres = xtable( mat, align=align )
   
-  # Make the table
-  xt = latex.table.by(fmat,align=align,hline=hline)
-  attributes(xt) = c(attributes(xt),rowcaption=rowcaption)
-  return(xt)
+  # hack to add one row that acts as a caption and one that adds column names
+  rowcaption = paste(unique(filename(x)))
+  first.row = str_c( " \\multicolumn{1}{c}{} &",
+           paste0("\\multicolumn{1}{c}{",colnames(mat),"}", collapse=" & "), "\\\\")
+  last.row = str_c( str_c( "\\cline{2-",ncol(xres),"}" ), 
+          " \\multicolumn{1}{c}{} & \\multicolumn{",ncol(xres)-1,"}{c}{",rowcaption,"}" )
+  atr = list(pos=list(0,nrow(xres)),command=c(first.row,last.row))
+  
+  # Make the actual latex code
+  latex.code = print(xres, include.rownames=FALSE, include.colnames=FALSE,
+                     hline.after=hline, add.to.row=atr)
+
+  # Modify the latex code for partial horizontal lines
+  part.hline = paste("\\\\cline{2-",ncol(xres),"}",sep="")
+  latex.code2 = str_replace_all(latex.code, "\\\\hline", part.hline)
+  latex.code2
 }
 
-print_well_table = function( xt, ... ) {  
-  # hack to add partial horizontal line at the bottom of the table
-  cmd1 = str_c( "\\cline{2-",ncol(xt),"}" )
-  
-  # hack to add one row that acts as a caption
-  rowcaption = attributes(xt)$rowcaption
-  cmd = str_c(cmd1, " \\multicolumn{1}{c}{} & \\multicolumn{",ncol(xt)-1,"}{c}{",rowcaption,"}" )
-  
-  # The string to add to the last row of the table
-  atr = list(pos=list(nrow(xt)),command=cmd)
-
-  print( xt, include.rownames=FALSE, include.colnames=FALSE, 
-         sanitize.text.function=force, hline.after=NULL, add.to.row=atr, ... )
-}
