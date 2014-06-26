@@ -1,6 +1,16 @@
 # A library of functions for processing multi-well data
 source("./Figures/loadData.R")
 
+# Reference 1
+subset = select(wells, file=c("J774-a.txt","J774-b.txt"))
+t.subset = normalize_toxin(subset,xlim=c(-2,Inf))
+p1 = plot( select(t.subset,"TcdA"), xlim=c(-0.01,0.7), points=TRUE, 
+           color="concentration", replicates=TRUE) +
+  ylab("Normalize Impedance") + ggtitle("TcdA")
+p2 = plot( select(t.subset,"TcdB"), xlim=c(-0.01,1.2), points=TRUE, 
+           color="concentration", replicates=TRUE) +
+  ylab("Normalize Impedance") + ggtitle("TcdB")
+grid.arrange(p1,p2,ncol=2)
 
 # HCT8.txt
 # A cell number titration was used to determine the number
@@ -149,7 +159,8 @@ grid.arrange(p1, p2, p3, p4, nrow=2)
 # LaTeX tables
 fwells = split(wells, filename(wells))
 fwells = fwells[sort(names(fwells))]
-lapply( fwells, latex_layout )
+latex.code = lapply( fwells, latex_layout, ID="toxinAdd", floating=FALSE, scalebox=0.6 )
+do.call( cat, c("\\begin{adjustwidth}{0in}{3in}{",latex.code,"\\end{adjustwidth}") )
 
 
 

@@ -19,13 +19,13 @@ s.subsets = Map(add_smoother, n.subsets, method="composite2",
 
 ######### Panel A. Different cell types. Same concentrations. #########
 allwells = do.call("c",s.subsets)
-subset = select(allwells, "TcdA[100]", ID="toxinAdd", controls=TRUE)
-plot(subset, xlim=c(-1,10), replicates=TRUE, sd=FALSE, 
-     color="compound", type="total")
+subset = select(allwells, "TcdA[100]", ID="toxinAdd")
+p1 = plot(subset, xlim=c(-1,10), replicates=TRUE, sd=FALSE, 
+          color="compound", type="total")
 
 ######### Panel B. Same cell type. Different toxins ############
-subset = select(allwells, "IMCE & (TcdA[100] | TcdB[100])", controls=TRUE)
-plot(subset, xlim = c(-0.1, 2), replicates=TRUE, sd = FALSE, color="compound")
+subset = select(allwells, "IMCE & (TcdA[100] | TcdB[100])")
+p2 = plot(subset, xlim = c(-0.1, 2), replicates=TRUE, sd = FALSE, color="compound")
 
 ######## Panel C. MaxS and ABC for IMCE cells ###########
 # Calculate ABC for each subset
@@ -41,18 +41,18 @@ maxs = Map( calculate_max_rate, s.subsets, ID="toxinAdd",
 maxs.df = rbindlist(maxs)
 
 #### Make the plots for just IMCE cells
-ggplot( maxs.df[celltype=="IMCE" & compound!="",],
-        aes(x=as.numeric(concentration), y=rate, color=compound)) + 
-  geom_hline(data=maxs.df[celltype=="IMCE" & compound=="",], 
+p3a = ggplot( maxs.df[celltype=="IMCE" & compound!="",],
+              aes(x=as.numeric(concentration), y=rate, color=compound)) + 
+      geom_hline(data=maxs.df[celltype=="IMCE" & compound=="",], 
              aes(intercept=rate), color="blue", linetype="dashed") +
-  geom_point() + scale_x_log10()
+      geom_point() + scale_x_log10()
   
-ggplot( areas.df[celltype=="IMCE" & compound!="",],
-          aes(x=as.numeric(concentration), y=area, color=compound)) + 
-  geom_hline(data=areas.df[celltype=="IMCE" & compound=="",], 
+p3b = ggplot( areas.df[celltype=="IMCE" & compound!="",],
+              aes(x=as.numeric(concentration), y=area, color=compound)) + 
+      geom_hline(data=areas.df[celltype=="IMCE" & compound=="",], 
              aes(intercept=area), color="blue", linetype="dashed") + 
-  geom_point() + scale_x_log10()
-  
+      geom_point() + scale_x_log10()
+p3 = arrangeGrob(p3a, p3b, nrow=2)
 
 ####### Panel D. The MCC for each cell type ##############
 # The MCC was found by plotting the ABC of each cell type over
