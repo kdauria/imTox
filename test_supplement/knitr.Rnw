@@ -1,0 +1,114 @@
+% formatting
+\documentclass[10pt,a4paper,final]{article}
+\usepackage{amssymb,latexsym}
+\usepackage{graphicx}
+\usepackage{authblk}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{parskip}
+\setlength{\parindent}{0pt}
+\usepackage{textgreek}
+\usepackage{pbox}
+\usepackage{multirow}
+\usepackage{changepage}
+\usepackage{longtable}
+\renewcommand{\thefigure}{M\arabic{figure}}
+
+% command for making a table within the cell of a table
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}l@{}}#2\end{tabular}}
+
+% citations
+\usepackage[url=false,
+            backref=true,
+            autocite=superscript,
+            hyperref=true,
+            style=nature,
+            sorting=none,
+            maxbibnames=99,
+            minbibnames=99, 
+            doi=false,url=false,isbn=false]{biblatex}
+%\addbibresource{Manual.bib}
+\AtEveryBibitem{\clearfield{issn}}
+\AtEveryCitekey{\clearfield{issn}}
+\DefineBibliographyStrings{english}{%
+                                    backrefpage  = {see p.}, % for single page number
+                                    backrefpages = {see pp.} % for multiple page numbers
+}
+
+
+% links
+\usepackage{color}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage[colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=blue]{hyperref}
+
+
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+
+<<set-options, include=FALSE, cache=FALSE>>=
+  opts_knit$set(root.dir="../")
+  opts_chunk$set(eval=TRUE,dev="png",dpi=400,tidy=FALSE,message=FALSE,cache=TRUE,warning=FALSE)
+@
+
+\title{Supplement}
+\author[1]{\fontsize{10}{11}\selectfont Kevin~M. D'Auria}
+             \author[2]{Meghan~J. Bloom}
+             \author[2]{Yesenia Reyes}
+             \author[2]{Mary~C. Gray}
+             \author[2]{Edward~J. van Opstal}
+             \author[1]{Jason~A. Papin}
+             \author[2]{Erik~L. Hewlett}
+             \affil[1]{Department of Biomedical Engineering} 
+             \affil[2]{Division of Infectious Diseases and International Health\\
+             Department of Medicine}
+             \affil[ ]{University of Virginia, Charlottesville, VA}
+             \date{}
+             \maketitle
+
+\hypersetup{linkcolor=black}
+\setcounter{tocdepth}{2}
+\tableofcontents
+\hypersetup{linkcolor=blue}
+
+% The hidden files and functions that allow this code to run
+<<hiddenopts, echo=FALSE, cache=TRUE>>=
+source("./R/loadData.R")
+
+small.theme = theme(legend.text = element_text(size=6),
+                    legend.key.size = unit(6, "points"),
+                    legend.title = element_text(size=6),
+                    legend.margin = unit(1, "points"),
+                    plot.margin = unit(rep(0,4), "points"),
+                    axis.text = element_text(size=6),
+                    axis.title = element_text(size=6),
+                    strip.text = element_text(size=6),
+                    plot.title = element_text(size=8))
+
+ggplot = function(...)
+  ggplot2::ggplot(...) + small.theme
+
+qplot = function(...)
+  ggplot2::qplot(...) + small.theme
+
+plot.wellList = function(...)
+  wellz:::plot.wellList(...) + small.theme
+@
+
+The big image?? I don't know why it's so big.
+
+<<j774-2_txt, tidy=TRUE, fig.width=3.3, fig.height=2.5, out.width="3.3in", out.height="2.5in">>=
+subset = normalize_toxin(select(wells, file="J774-2.txt"))
+plot(subset, replicates=TRUE, xlim=c(-1,24), color="concentration")
+@
+
+
+
+%\printbibliography
+
+\end{document}
+
+
+

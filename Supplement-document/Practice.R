@@ -1,5 +1,5 @@
 # A library of functions for processing multi-well data
-source("./Figures/loadData.R")
+source("./R/loadData.R")
 
 # Reference 1
 subset = select(wells, file=c("J774-a.txt","J774-b.txt"))
@@ -73,6 +73,12 @@ p2 = plot(select(subset, "TcdB"), color="concentration", xlim=c(-1,20), replicat
 grid.arrange(p1, p2, nrow=1)
 
 # HUVEC-a.txt & HUVEC-b.txt
+subset = normalize_toxin(select(wells, "HUVEC"))
+p1 = plot(select(subset, "TcdA"), color="concentration", xlim=c(-1,20), replicates=TRUE) + ggtitle("TcdA")
+p2 = plot(select(subset, "TcdB"), color="concentration", xlim=c(-1,5), replicates=TRUE) + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
+
+# T84-a.txt & T84-b.txt
 subset = normalize_toxin(select(wells, "T84"))
 p1 = plot(select(subset, "TcdA"), color="concentration", xlim=c(-1,20)) + ggtitle("TcdA")
 p2 = plot(select(subset, "TcdB"), color="concentration", xlim=c(-1,20)) + ggtitle("TcdB")

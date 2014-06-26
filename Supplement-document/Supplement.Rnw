@@ -50,7 +50,7 @@
 
 <<set-options, include=FALSE, cache=FALSE>>=
   opts_knit$set(root.dir="../")
-  opts_chunk$set(eval=TRUE,dev="png",dpi=400,tidy=FALSE,message=FALSE,cache=TRUE,warning=FALSE)
+  opts_chunk$set(eval=TRUE,dev="png",dpi=400,tidy=FALSE,message=FALSE,cache=TRUE,warning=FALSE,size="small")
 @
 
 \title{Supplement}
@@ -74,7 +74,7 @@
 \hypersetup{linkcolor=blue}
 
 % The hidden files and functions that allow this code to run
-<<hiddenopts, echo=FALSE, cache=FALSE>>=
+<<hiddenopts, echo=FALSE, cache=TRUE>>=
 source("./R/loadData.R")
 
 small.theme = theme(legend.text = element_text(size=6),
@@ -84,7 +84,8 @@ small.theme = theme(legend.text = element_text(size=6),
                     plot.margin = unit(rep(0,4), "points"),
                     axis.text = element_text(size=6),
                     axis.title = element_text(size=6),
-                    strip.text = element_text(size=6) )
+                    strip.text = element_text(size=6),
+                    plot.title = element_text(size=8))
 
 ggplot = function(...)
   ggplot2::ggplot(...) + small.theme
@@ -314,6 +315,8 @@ within R (as shown in \ref{S:ReFig}).
 
 \subsection{Plate summaries}
 
+\begingroup
+\footnotesize
 \begin{longtable}{ l l l l }
   Cell type & File names & Toxins (ng/ml) & Notes \\ \hline\hline
    \multirow{22}{*}{HCT8}  & 
@@ -368,7 +371,13 @@ within R (as shown in \ref{S:ReFig}).
                                           gdTcdB (10, 100) \\
                                           A (1) + gdTcdB (10) \\
                                           A (1000) + gdTcdB (1000) \\
-                                          B (10) + gdTcdB (100) } & toxins + gdTcdB \\ \hline
+                                          B (10) + gdTcdB (100) } & toxins + gdTcdB \\ \cline{2-4}
+                          & J774-6.txt
+                          & \specialcell{ A (0.1, 1, 10, 100, 1000), \\
+                                          B (0.1, 1, 10, 100, 1000), \\
+                                          gdTcdB (1, 10, 100), \\
+                                          A (1) + gdTcdB (10) \\
+                                          B (0.1) + gdTcdB (1) } & toxins + gdTcdB \\ \hline
    \multirow{8}{*}{PMN} & \specialcell{PMN-a.txt \\ PMN-b.txt} &
          \specialcell{A (10000, 7000, 5000, 3000, 1000, 500, 100) \\
                       B (10000, 7000, 5000, 3000, 1000, 500, 100) } & toxins + IL8 \\ \cline{2-4}
@@ -385,6 +394,7 @@ within R (as shown in \ref{S:ReFig}).
          \specialcell{ toxins alone and \\ toxins + IL8 } \\ \hline
    
 \end{longtable}
+\endgroup
 
 \subsection{HCT8 cells}
 
@@ -399,8 +409,8 @@ plot(subset, xlim=c(0,48), color="concentration", type="total",
 <<hct8_txt_b, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
 A = normalize_toxin( select(subset, "HCT8[5000] & TcdA"))
 B = normalize_toxin( select(subset, "HCT8[5000] & TcdB"))              
-plotA = plot(A, color="concentration", ID="toxinAdd", xlim=c(-1,10) )
-plotB = plot(B, color="concentration", ID="toxinAdd", xlim=c(-1,10) ) 
+plotA = plot(A, color="concentration", ID="toxinAdd", xlim=c(-1,10)) + ggtitle("TcdA")
+plotB = plot(B, color="concentration", ID="toxinAdd", xlim=c(-1,10)) + ggtitle("TcdB")
 grid.arrange(plotA, plotB, nrow=1)  
 @
 
@@ -443,34 +453,38 @@ grid.arrange(p1, p2, p3, p4, p5, p6, nrow=3)
 
 \subsection{CHO cells}
 
-\subsubsection{CHO.txt}
-
 <<cho_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+subset = normalize_toxin(select(wells, file="CHO.txt"))
+p1 = plot(select(subset, "TcdA"), xlim=c(-1,20), color="concentration") + ggtitle("TcdA")
+p2 = plot(select(subset, "TcdB"), xlim=c(-1,10), color="concentration") + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
 @
 
 \subsection{IMCE cells}
 
-\subsubsection{IMCE.txt}
-
 <<imce_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+subset = normalize_toxin(select(wells, "IMCE"))
+p1 = plot(select(subset, "TcdA"), color="concentration", xlim=c(-1,20), replicates=TRUE) + ggtitle("TcdA")
+p2 = plot(select(subset, "TcdB"), color="concentration", xlim=c(-1,20), replicates=TRUE) + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
 @
 
 \subsection{HUVECs}
 
-\subsubsection{HUVEC-a.txt and HUVEC-b.txt}
-
 <<huvec_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+subset = normalize_toxin(select(wells, "HUVEC"))
+p1 = plot(select(subset, "TcdA"), color="concentration", xlim=c(-1,20), replicates=TRUE) + ggtitle("TcdA")
+p2 = plot(select(subset, "TcdB"), color="concentration", xlim=c(-1,5), replicates=TRUE) + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
 @
 
 \subsection{T84 cells}
 
-\subsubsection{T84-a.txt and T84-b.txt}
-
 <<t84_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+subset = normalize_toxin(select(wells, "T84"))
+p1 = plot(select(subset, "TcdA"), color="concentration", xlim=c(-1,20)) + ggtitle("TcdA")
+p2 = plot(select(subset, "TcdB"), color="concentration", xlim=c(-1,20)) + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
 @
 
 \subsection{J774 cells}
@@ -478,33 +492,64 @@ grid.arrange(p1, p2, p3, p4, p5, p6, nrow=3)
 \subsubsection{J774-a.txt and J774-b.txt}
 
 <<j774_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+subset = normalize_toxin(select(wells, file=c("J774-a.txt","J774-b.txt")))
+p1 = plot(select(subset,"TcdA"), xlim=c(-1,40), replicates=TRUE, color="concentration") + ggtitle("TcdA")
+p2 = plot(select(subset,"TcdB"), xlim=c(-1,40), replicates=TRUE, color="concentration") + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
 @
 
 \subsubsection{J774-2.txt}
 
-<<j774-2_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+<<j774-2_txt, tidy=TRUE, fig.width=3.3, fig.height=2.5, out.width="3.3in", out.height="2.5in">>=
+subset = normalize_toxin(select(wells, file="J774-2.txt"))
+plot(subset, replicates=TRUE, xlim=c(-1,24), color="concentration") + ggtitle("TcdB")
 @
 
 \subsubsection{J774-3a.txt and J774-3b.txt}
 
-<<j774-3_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+<<j774-3_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
+subset = normalize_toxin(select(wells, file=c("J774-3a.txt","J774-3b.txt")))
+tox_plot = function(x, replicates=TRUE) 
+  plot(x, color="concentration", replicates=TRUE, xlim=c(-1,10))
+p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
+p2 = tox_plot( select(subset, "TcdA")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, nrow=2)
 @
 
 \subsubsection{J774-4.txt}
 
-<<j774-4_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+<<j774-4_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
+subset = normalize_toxin(select(wells, file="J774-4.txt"))
+tox_plot = function(x, replicates=TRUE, xlim=c(-1,24), ...) 
+  plot(x, color="concentration", replicates=replicates, xlim=xlim, ...)
+p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
+p2 = tox_plot( select(subset, "TcdA")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, nrow=2)
 @
 
 \subsubsection{J774-5.txt}
 
-<<j774-5_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+<<j774-5_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
+subset = normalize_toxin(select(wells, file="J774-5.txt"))
+p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
+p2 = tox_plot( select(subset, "TcdA")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, nrow=2)
 @
 
+\subsubsection{J774-6.txt}
+
+<<j774-6_txt, tidy=TRUE, fig.width=7.5, fig.height=6.5>>=
+subset = normalize_toxin(select(wells, file="J774-6.txt"))
+p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
+p2 = tox_plot( select(subset, "TcdA[1]")) + ggtitle("TcdA 1 ng/ml")
+p3 = tox_plot( select(subset, "TcdA & !TcdA[10] & !gdTcdB")) + ggtitle("TcdA")
+p4 = tox_plot( select(subset, "TcdB[0.1]"), xlim=c(0,5)) + ggtitle("TcdB 0.1 ng/ml")
+p5 = tox_plot( select(subset, "TcdB & !gdTcdB")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, p4, p5, nrow=3)
+@
 
 \subsection{PMN leukocytes}\label{S:PMNs}
 
@@ -517,7 +562,11 @@ normalizing the impedance at the time toxin was added, the change in impedance
 from the time of toxin addition is shown.
 
 <<pmn-2_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+subset = select(wells, file=c("PMN-2a.txt", "PMN-2b.txt"))
+subset2 = transform(subset, c("tcenter","level"), ID="toxinAdd")
+p1 = tox_plot( select(subset2, "TcdA")) + ggtitle("TcdA")
+p2 = tox_plot( select(subset2, "TcdB")) + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
 @
 
 
@@ -526,14 +575,24 @@ Cells were seeded in the presence of 100 ng/ml (9.01 nM) of human recombinant IL
 an attempt to increase impedance before adding toxin.
 
 <<pmn_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+subset = select(wells, file=c("PMN-a.txt","PMN-b.txt"))
+subset2 = transform(subset, c("tcenter","level"), ID="toxinAdd")
+p1 = tox_plot( select(subset2, "!TcdB")) + ggtitle("TcdA")
+p2 = tox_plot( select(subset2, "!TcdA"), xlim=c(-1,10)) + ggtitle("TcdB")
+grid.arrange(p1, p2, nrow=1)
 @
 
 \subsubsection{PMN-3.txt}
 Cells were seeded in the presence of 25 nM (277.45 ng/ml) of IL-8.
 
-<<pmn-3_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+<<pmn-3_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
+subset = select(wells, file="PMN-3.txt")
+subset2 = transform(subset, c("tcenter","level"), ID="toxinAdd")
+p1 = tox_plot( select(subset2, "(TcdA & IL8) | (IL8 & !TcdA & !TcdB)")) + ggtitle("TcdA+IL8")
+p2 = tox_plot( select(subset2, "TcdA & !IL8")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset2, "(TcdB & IL8) | (IL8 & !TcdA & !TcdB)"), replicates=FALSE) + ggtitle("TcdB+IL8")
+p4 = tox_plot( select(subset2, "TcdB & !IL8")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, p4, nrow=2)
 @
 
 \subsubsection{PMN-4.txt}
@@ -541,17 +600,25 @@ Cells were seeded in the presence of 25 nM (277.45 ng/ml) of IL-8. The
 machine temporarily stopped making impedance measurements from approximately
 five to 20 hours.
 
-<<pmn-4_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
-
+<<pmn-4_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
+subset = select(wells, file="PMN-4.txt")
+subset2 = transform(subset, c("tcenter","level"), ID="toxinAdd")
+p1 = tox_plot( select(subset2, "(TcdA & IL8) | (IL8 & !TcdA & !TcdB)")) + ggtitle("TcdA+IL8")
+p2 = tox_plot( select(subset2, "TcdA & !IL8")) + ggtitle("TcdA")
+p3 = tox_plot( select(subset2, "(TcdB & IL8) | (IL8 & !TcdA & !TcdB)"), replicates=FALSE) + ggtitle("TcdB+IL8")
+p4 = tox_plot( select(subset2, "TcdB & !IL8")) + ggtitle("TcdB")
+grid.arrange(p1, p2, p3, p4, nrow=2)
 @
-
 
 \subsection{Plate Layouts}\label{S:plateLayouts}
 
 Below are the layouts of all of the plates used.
 
 <<plate-layouts, results="asis">>=
-
+fwells = split(wells, filename(wells))
+fwells = fwells[sort(names(fwells))]
+latex.code = lapply( fwells, latex_layout, ID="toxinAdd", floating=FALSE, scalebox=0.6 )
+do.call( cat, c("\\begin{adjustwidth}{0in}{3in}{",latex.code,"}\\end{adjustwidth}") )
 @
 
 

@@ -106,7 +106,7 @@ HCT8-4.txt	A-H1-3, A-D4, F-H4	start	0	0	100	-	-	-
 	F-G4		2554			TcdA	100		
 						gdTcdB	1000		
 HUVEC-a.txt	A-H3-4	start	0	0	100	-	-	-	
-	A-H3-4	start	2	0	100	HUVEC	5000	total	
+	A-H3-4	cellSeed	2	0	100	HUVEC	5000	total	
 	A-H3-4	replaceMedia	1794	100	100	-	-	-	
 	D3-4	toxinAdd	1910	0	22.2	-	-	-	
 	A-C3, E-H3					TcdA	1000, 300, 100, 30, 10, 1, 0.1	final	
