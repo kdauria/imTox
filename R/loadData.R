@@ -2,7 +2,10 @@ library(ggplot2)
 library(stringr)
 library(data.table)
 library(gridExtra)
+library(gridSVG)
 library(wellz)
+library(reshape)
+library(RSvgDevice)
 wells = parse_metadata( metadata="./Annotations2.csv", 
                         data.dir="./Data",
                         parse_fun=wellz:::parse_rtca)

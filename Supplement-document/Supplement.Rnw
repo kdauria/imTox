@@ -398,13 +398,17 @@ within R (as shown in \ref{S:ReFig}).
 
 \subsection{HCT8 cells}
 
-\subsubsection{HCT8.txt}
+First, a titration was performed to determine the number of HCT8 cells
+needed to reach maximum impedance in a specified amount of time.
 
 <<hct8_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
 subset = select(wells, file="HCT8.txt")
 plot(subset, xlim=c(0,48), color="concentration", type="total", 
      replicates=TRUE, ID="cellSeed", sd=FALSE)
 @
+
+In the same experiment, the wells seeded with 5,000 cells were
+used for a concentration-response experiment with TcdA and TcdB.
 
 <<hct8_txt_b, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
 A = normalize_toxin( select(subset, "HCT8[5000] & TcdA"))
@@ -414,31 +418,43 @@ plotB = plot(B, color="concentration", ID="toxinAdd", xlim=c(-1,10)) + ggtitle("
 grid.arrange(plotA, plotB, nrow=1)  
 @
 
-\subsubsection{HCT8-2a.txt and HCT8-2b.txt}
+In the next experiment, gdTcdB or TcdA+gdTcdB
+and TcdB+gdTcdB combinations were added to HCT8 cells. gdTcdB had little effect within
+the first ten hours, yet delayed the effects of TcdA and TcdB.
 
 <<hct8-2_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
 subset = normalize_toxin(select(wells, file=c("HCT8-2a.txt","HCT8-2b.txt")), xlim=c(-1,10))
-tox_plot = function(x, replicates=TRUE) {
+tox_plot = function(x, replicates=TRUE)
   plot(x, color="concentration", replicates=replicates) + ylim(c(0,1.2))
-}
 p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
 p2 = tox_plot( select(subset, "TcdA")) + ggtitle("TcdA")
 p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
 grid.arrange(p1, p2, p3, nrow=2)
 @
 
-\subsubsection{HCT8-3.txt}
+The experiment was repeated again approximately one year later, yet
+the variance of the growth of cells was high, presumably because of different
+numbers of seeded cells in each well (note the last three panels
+where the replicates are not averaged). This variance made it difficult to detect
+any potential gdTcdB-induced delay of TcdA or TcdB's effects.
 
-<<hct8-3_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
-subset = normalize_toxin( select(wells, "TcdA | TcdB | gdTcdB", 
-                                 file="HCT8-3.txt"), xlim=c(-1,10) )
-p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
-p2 = tox_plot( select(subset, "TcdA")) + ggtitle("TcdA")
-p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
-grid.arrange(p1, p2, p3, nrow=2)
+<<hct8-3_txt, tidy=TRUE, fig.width=7.5, fig.height=6.5>>=
+subset0 = select(wells, "TcdA | TcdB | gdTcdB", file="HCT8-3.txt")
+subset = normalize_toxin( subset0, xlim=c(-1,10) )
+p1 = tox_plot(select(subset, "!TcdA & !TcdB")) + ggtitle("gdTcdB")
+p2 = tox_plot(select(subset, "TcdA")) + ggtitle("TcdA")
+p3 = tox_plot(select(subset, "TcdB")) + ggtitle("TcdB")
+p4 = plot(subset0,color="concentration",xlim=c(0,50))
+p5 = tox_plot(select(subset, "TcdA"), replicates=FALSE) + ggtitle("TcdA")
+p6 = tox_plot(select(subset, "TcdB"), replicates=FALSE) + ggtitle("TcdA")
+grid.arrange(p1, p2, p3, p4, p5, p6, nrow=3)
 @   
 
-\subsubsection{HCT8-4.txt}
+Therefore, a similar experiment was again performed. The variance
+among replicates was much tighter, and gdTcdB did indeed delay the
+effects of TcdA and TcdB. However, at the higher concentration of TcdB (100 ng/ml),
+this delay was not obvious; only one of the four samples showed a delay. The
+reason for this outlier is unclear.
 
 <<hct8-4_txt, tidy=TRUE, fig.width=7.5, fig.height=6.5>>=
 subset = normalize_toxin( select(wells, file="HCT8-4.txt"), xlim=c(-1,12) )
@@ -489,7 +505,7 @@ grid.arrange(p1, p2, nrow=1)
 
 \subsection{J774 cells}
 
-\subsubsection{J774-a.txt and J774-b.txt}
+TcdA and TcdB were added to confluent J774 cells.
 
 <<j774_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
 subset = normalize_toxin(select(wells, file=c("J774-a.txt","J774-b.txt")))
@@ -498,14 +514,19 @@ p2 = plot(select(subset,"TcdB"), xlim=c(-1,40), replicates=TRUE, color="concentr
 grid.arrange(p1, p2, nrow=1)
 @
 
-\subsubsection{J774-2.txt}
+Since the lowest TcdB concentration tested in the first experiment
+still had an effect, a fuller concentration-response experiment was
+performed with TcdB. The lowest concentration to cause a response
+was approximately 1 pg/ml.
 
 <<j774-2_txt, tidy=TRUE, fig.width=3.3, fig.height=2.5, out.width="3.3in", out.height="2.5in">>=
 subset = normalize_toxin(select(wells, file="J774-2.txt"))
 plot(subset, replicates=TRUE, xlim=c(-1,24), color="concentration") + ggtitle("TcdB")
 @
 
-\subsubsection{J774-3a.txt and J774-3b.txt}
+Like with HCT8 cells, gdTcdB was combined with TcdA and TcdB to
+see if it delayed their effects. No delay was clearly observed, yet
+gdTcdB alone elicited a distinct response at 100 ng/ml (but not 1 or 10 ng/ml).
 
 <<j774-3_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
 subset = normalize_toxin(select(wells, file=c("J774-3a.txt","J774-3b.txt")))
@@ -517,7 +538,12 @@ p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
 grid.arrange(p1, p2, p3, nrow=2)
 @
 
-\subsubsection{J774-4.txt}
+In the next experiment, toxin was added to subconfluent cells
+for the sake of easier imaging of individual cells. The impedance
+increases much more than with confluent cells likely because the spreading
+of macrophages is more obvious when fewer cells are already covering
+the electrodes before the toxin is added. Again, TcdB and gdTcdB at 100 ng/ml
+induced a temporary increase in impedance followed by a long decrease.
 
 <<j774-4_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
 subset = normalize_toxin(select(wells, file="J774-4.txt"))
@@ -529,7 +555,9 @@ p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
 grid.arrange(p1, p2, p3, nrow=2)
 @
 
-\subsubsection{J774-5.txt}
+Different combination of gdTcdB and TcdA or TcdB were added to cells
+to explore other potential interactions. None were found; the effects
+appeared to be additive.
 
 <<j774-5_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
 subset = normalize_toxin(select(wells, file="J774-5.txt"))
@@ -539,14 +567,17 @@ p3 = tox_plot( select(subset, "TcdB")) + ggtitle("TcdB")
 grid.arrange(p1, p2, p3, nrow=2)
 @
 
-\subsubsection{J774-6.txt}
+A sixth experiment was carried out with J774 cells to confirm the previous
+findings. TcdB and gdTcdB at 100 ng/ml decreased J774 impedance; TcdA and
+TcdB at lower concentrations increased impedance; and gdTcdB did not clearly
+alter the affects of TcdA or TcdB.
 
 <<j774-6_txt, tidy=TRUE, fig.width=7.5, fig.height=6.5>>=
 subset = normalize_toxin(select(wells, file="J774-6.txt"))
 p1 = tox_plot( select(subset, "gdTcdB & !(TcdA | TcdB)")) + ggtitle("gdTcdB")
 p2 = tox_plot( select(subset, "TcdA[1]")) + ggtitle("TcdA 1 ng/ml")
 p3 = tox_plot( select(subset, "TcdA & !TcdA[10] & !gdTcdB")) + ggtitle("TcdA")
-p4 = tox_plot( select(subset, "TcdB[0.1]"), xlim=c(0,5)) + ggtitle("TcdB 0.1 ng/ml")
+p4 = tox_plot( select(subset, "TcdB[0.1] | gdTcdB[1-10] & !TcdA"), xlim=c(0,5)) + ggtitle("TcdB 0.1 ng/ml")
 p5 = tox_plot( select(subset, "TcdB & !gdTcdB")) + ggtitle("TcdB")
 grid.arrange(p1, p2, p3, p4, p5, nrow=3)
 @
@@ -554,10 +585,10 @@ grid.arrange(p1, p2, p3, p4, p5, nrow=3)
 \subsection{PMN leukocytes}\label{S:PMNs}
 
 Consistent response profiles of PMNs to TcdA or TcdB could not be obtained.
+This is likely because unstimulated PMNs are not adherent and so
+changes in shape are difficult to measure by impedance.
 
-\subsubsection{PMN-2a.txt and PMN-2b.txt}
-
-Only TcdA at 1,000 ng/ml was clearly different than control cells. Instead of
+In the first experiment, only TcdA at 1,000 ng/ml was clearly different than control cells. Instead of
 normalizing the impedance at the time toxin was added, the change in impedance
 from the time of toxin addition is shown.
 
@@ -569,9 +600,8 @@ p2 = tox_plot( select(subset2, "TcdB")) + ggtitle("TcdB")
 grid.arrange(p1, p2, nrow=1)
 @
 
-
-\subsubsection{PMN-a.txt and PMN-b.txt}
-Cells were seeded in the presence of 100 ng/ml (9.01 nM) of human recombinant IL-8 in
+In the next experiment, cells were seeded in the presence 
+of 100 ng/ml (9.01 nM) of human recombinant IL-8 in
 an attempt to increase impedance before adding toxin.
 
 <<pmn_txt, tidy=TRUE, fig.width=7.5, fig.height=2.5>>=
@@ -582,8 +612,8 @@ p2 = tox_plot( select(subset2, "!TcdA"), xlim=c(-1,10)) + ggtitle("TcdB")
 grid.arrange(p1, p2, nrow=1)
 @
 
-\subsubsection{PMN-3.txt}
-Cells were seeded in the presence of 25 nM (277.45 ng/ml) of IL-8.
+In another experiment, cells were seeded in the presence of 25 nM (277.45 ng/ml) of IL-8.
+The results were not consistent with the previous experiment with IL-8.
 
 <<pmn-3_txt, tidy=TRUE, fig.width=7.5, fig.height=4.5>>=
 subset = select(wells, file="PMN-3.txt")
@@ -595,8 +625,7 @@ p4 = tox_plot( select(subset2, "TcdB & !IL8")) + ggtitle("TcdB")
 grid.arrange(p1, p2, p3, p4, nrow=2)
 @
 
-\subsubsection{PMN-4.txt}
-Cells were seeded in the presence of 25 nM (277.45 ng/ml) of IL-8. The
+Again, cells were seeded in the presence of 25 nM (277.45 ng/ml) of IL-8. The
 machine temporarily stopped making impedance measurements from approximately
 five to 20 hours.
 
