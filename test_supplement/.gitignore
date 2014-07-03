@@ -1,9 +1,0 @@
-cache
-*.tex
-*.bcf
-*.log
-*.pdf
-*.xml
-*.gz
-*.toc
-figures

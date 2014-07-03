@@ -1,0 +1,15 @@
+Package: imTox
+Title: impedance data for C. diff toxins
+Description: Code to reproduce figures and analysis of manuscript
+Version: 0.1
+Author: Kevin D'Auria <kdauria@gmail.com>
+Maintainer: Kevin D'Auria <kdauria@gmail.com>
+License: Unknown
+Depends:
+    R (>= 3.1.0)
+LinkingTo: Rcpp
+Imports:
+    knitr
+URL: 
+VignetteBuilder: knitr
+LazyData: true

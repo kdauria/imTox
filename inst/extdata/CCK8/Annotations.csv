@@ -1,0 +1,23 @@
+file	wells	ID	i	rmVol	adVol	name	conc	type	solvent
+Absorbances.csv	B-D12	oneID	0	0	100	blank	1	start	media
+	E-F8-10					control	1		
+	B2-4					A	1000		
+	C2-4						100		
+	D2-4						10		
+	E2-4						1		
+	F2-4						0.1		
+	G2-4						0.1		
+						mB	1		
+	B5-7					B	1000		
+	C5-7						100		
+	D5-7						10		
+	E5-7						1		
+	F5-7						0.1		
+	G5-7					B	0.1		
+						mB	10		
+	B8-10					mB	100		
+	C8-10					mB	10		
+	D8-10					mB	1		
+	G8-10					B	0.1		
+						mB	1		
+	B-G11					lysis	1		

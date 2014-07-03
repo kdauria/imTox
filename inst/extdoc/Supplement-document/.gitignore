@@ -1,0 +1,12 @@
+figure
+cache
+*.bcf
+*.pdf
+*.tex
+*.toc
+*.xml
+*.aux
+*.gz
+*.log
+*.Rhistory
+*.jpg
