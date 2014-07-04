@@ -33,6 +33,7 @@ select = function(...,controls=TRUE) wellz::select(...,controls=controls)
 #' @export
 small_theme = function() {
   theme(legend.text = element_text(size=6),
+        legend.title = element_text(size=6),
         legend.key.size = unit(6, "points"),
         legend.margin = unit(1, "points"),
         plot.margin = unit(rep(0,4), "points"),

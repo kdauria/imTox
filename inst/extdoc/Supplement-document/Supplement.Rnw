@@ -109,9 +109,11 @@ and TcdB (10 ng/ml) diverged from controls in 10 and 20 minutes,
 respectively (Supplement).''
 
 <<suppRef1>>=
+library(ggplot2, pos=3)
 subset = normalize_toxin(select(wells, file=c("J774-a.txt","J774-b.txt")))
 p1 = plot( select(subset,"TcdA"), xlim=c(-0.01,0.7), points=TRUE, title="TcdA") + ylab("Normalize Impedance")
-p2 = plot( select(t.subset,"TcdB"), xlim=c(-0.01,1.2), points=TRUE, title="TcdB") + ylab("Normalize Impedance")
+p2 = plot( select(subset,"TcdB"), xlim=c(-0.01,1.2), points=TRUE, title="TcdB") + ylab("Normalize Impedance")
+require(gridExtra)
 grid.arrange(p1,p2,ncol=2)
 @
 
