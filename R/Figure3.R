@@ -11,6 +11,8 @@
 #' @import gridExtra
 #' @import ggplot2
 #' @import reshape
+#' @import grid
+#' @import data.table
 #' @param wells the output of \code{load_data}
 #' @export
 figure_3 = function( wells=NULL ) {
@@ -22,12 +24,12 @@ figure_3 = function( wells=NULL ) {
   subset = normalize_toxin(select(wells, file=c("J774-a.txt","J774-b.txt")))
   subsetA = select(subset,"!TcdA[300] & !TcdA[3] & !TcdB & !Other")
   subsetB = select(subset,"!TcdB[300] & !TcdB[3] & !TcdA & !Other")
-  p1 = plot(subsetA, replicates=TRUE, xlim=c(-1,25), color="concentration") + ggtitle("TcdA") + ylim(c(0,2.9))
-  p2 = plot(subsetB, replicates=TRUE, xlim=c(-1,25), color="concentration") + ggtitle("TcdB") + ylim(c(0,2.9))
+  p1 = plot(subsetA, xlim=c(-1,25), title="TcdA") + ylim(c(0,2.9))
+  p2 = plot(subsetB, xlim=c(-1,25), title="TcdB") + ylim(c(0,2.9))
   
   subset = normalize_toxin(select(wells, file=c("J774-6.txt")))
   subsetgB = select(subset, "(gdTcdB[1-100] | TcdB[10-100]) & !((TcdB | TcdA) & gdTcdB)")
-  p3 = plot(subsetgB, replicates=TRUE, xlim=c(-1,25), color="concentration") + ggtitle("gdTcdB") + ylim(c(0,2.9))
+  p3 = plot(subsetgB, xlim=c(-1,25), title="gdTcdB") + ylim(c(0,2.9))
   
   #devSVG(file="Figures/J774-curves.svg",width=16,height=4)
   ptop = grid.arrange(p1,p2,p3,nrow=1)
@@ -42,7 +44,6 @@ figure_3 = function( wells=NULL ) {
   blanks = cast(melt_wellList( select(x,"blank") ), t~., fun.aggregate=mean )[,2]
   for( i in seq_along(x)) vdata(x[[i]]) = (vdata(x[[i]])-blanks)/(controls-blanks)
   x = add_spline(x) # need to update the spline whenever the data is modified
-  plot(x,replicates=TRUE, sd=TRUE, color="compound") + facet_wrap(~compound)
   
   # Select a subset of the data and reorganize it for bar plots
   y = select(x, "(A[10-100] | B[10-100] | mB[10-100] | control | lysis) & !(A & mB) & !(B & mB)")

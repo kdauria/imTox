@@ -79,30 +79,6 @@ library(imTox)
 wells = load_data()
 @
 
-% The hidden files and functions that allow this code to run
-<<hiddenopts, echo=TRUE, cache=FALSE>>=
-require(ggplot2)
-require(grid)
-small.theme = theme(legend.text = element_text(size=6),
-                    legend.key.size = unit(6, "points"),
-                    legend.title = element_text(size=6),
-                    legend.margin = unit(1, "points"),
-                    plot.margin = unit(rep(0,4), "points"),
-                    axis.text = element_text(size=6),
-                    axis.title = element_text(size=6),
-                    strip.text = element_text(size=6),
-                    plot.title = element_text(size=8))
-
-ggplot = function(...)
-  ggplot2::ggplot(...) + small.theme
-
-qplot = function(...)
-  ggplot2::qplot(...) + small.theme
-
-plot.wellList = function(...)
-  wellz:::plot.wellList(...) + small.theme
-@
-
 
 
 \subsection{ Figure 1 }
