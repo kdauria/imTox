@@ -101,7 +101,8 @@ wells = load_data()
 
 % The hidden files and functions that allow this code to run
 <<hiddenopts, echo=FALSE, cache=FALSE>>=
-library(ggplot2)
+require(ggplot2)
+require(grid)
 small.theme = theme(legend.text = element_text(size=6),
                     legend.key.size = unit(6, "points"),
                     legend.title = element_text(size=6),
@@ -174,7 +175,8 @@ Cosmetic alterations (colors, line widths, axes labeling, legends, etc.) were
 made with Adobe Illustrator. The code for the functions can be viewed
 by downloading the \texttt{imTox} R package, or the code can be viewed directly
 in a web browser on the \href{https://github.com/kdauria/imTox}{package's Github page}.
-The code and package is well documented, describing any smoothing or interpolation performed.
+The code and package is well documented, describing any data processing
+(e.g., smoothing, interpolation, etc.).
 
 \subsection{ Figure 1 }
 
@@ -184,7 +186,7 @@ figure_1(wells)
 
 \subsection{ Figure 2 }
 
-<< preFigure2, tidy=FALSE, fig.width=7.5, fig.height=4.5, eval=TRUE, results='hide'>>=
+<< Figure2, tidy=FALSE, fig.width=7.5, fig.height=4.5, eval=TRUE, results='hide'>>=
 figure_2(wells)
 @
 

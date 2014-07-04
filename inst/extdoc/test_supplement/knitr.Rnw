@@ -80,8 +80,9 @@ wells = load_data()
 @
 
 % The hidden files and functions that allow this code to run
-<<hiddenopts, echo=FALSE, cache=FALSE, eval=FALSE>>=
-library(ggplot2)
+<<hiddenopts, echo=TRUE, cache=FALSE>>=
+require(ggplot2)
+require(grid)
 small.theme = theme(legend.text = element_text(size=6),
                     legend.key.size = unit(6, "points"),
                     legend.title = element_text(size=6),
@@ -106,10 +107,9 @@ plot.wellList = function(...)
 
 \subsection{ Figure 1 }
 
-<<figure1, tidy=TRUE, fig.width=7.5, fig.height=2.5 >>=
-figure_1(wells)
+<< preFigure2, tidy=FALSE, fig.width=7.5, fig.height=4.5, eval=TRUE, results='hide'>>=
+figure_3(wells)
 @
-
 
 %\printbibliography
 

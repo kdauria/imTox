@@ -9,10 +9,12 @@
 #' @import wellz
 #' @import gridExtra
 #' @import ggplot2
+#' @import data.table
 #' @param wells the output of \code{load_data}
 #' @export
 figure_2 = function( wells=NULL ) {
 
+  require(ggplot2)
   if(is.null(wells)) wells = load_data()
   
   # Select the data set used for each cell type

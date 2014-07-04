@@ -7,6 +7,7 @@
 #'           is loaded with \code{load_data}.
 #' @export
 figure_1 = function(wells=NULL) {
+  require(ggplot2)
   if(is.null(wells)) wells = load_data()
   
   subset = select(wells, "TcdA[1000] & !gdTcdB", file="HCT8-4.txt")

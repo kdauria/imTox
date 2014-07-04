@@ -14,7 +14,8 @@
 #' @param wells the output of \code{load_data}
 #' @export
 figure_3 = function( wells=NULL ) {
-
+  
+  require(ggplot2)
   if(is.null(wells)) wells = load_data()
 
   ###### Panel A
@@ -29,21 +30,12 @@ figure_3 = function( wells=NULL ) {
   p3 = plot(subsetgB, replicates=TRUE, xlim=c(-1,25), color="concentration") + ggtitle("gdTcdB") + ylim(c(0,2.9))
   
   #devSVG(file="Figures/J774-curves.svg",width=16,height=4)
-  print(grid.arrange(p1,p2,p3,nrow=1))
+  ptop = grid.arrange(p1,p2,p3,nrow=1)
+  print(ptop)
   #dev.off()
   
   ### Panel C
-  my_parse_fun = function( fpath ) {
-    a = read.csv(fpath, sep="\t")
-    am = melt(a, measure.vars="A")
-    out = cast(am, hour~well )
-    out$i = 1:nrow(out)
-    colnames(out)[1] = "t"
-    out
-  }
-  x = parse_metadata(metadata="./inst/extdata/CCK8/Annotations.csv",
-                     data.dir="./inst/extdata/CCK8/",
-                     parse_fun = my_parse_fun, spline=TRUE)
+  x = load_cck8_data()
   
   # Normalize to controls and lysis values
   controls = cast(melt_wellList( select(x,"control") ), t~., fun.aggregate=mean )[,2]
@@ -71,9 +63,10 @@ figure_3 = function( wells=NULL ) {
           axis.text=element_blank(),
           axis.ticks=element_blank(),
           axis.title=element_blank())
-  print(bar.plots)
+  bar.plots
   #dev.off()
 }
+
 
 
 
