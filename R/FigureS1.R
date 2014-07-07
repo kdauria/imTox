@@ -6,6 +6,7 @@
 #' @export
 figure_s1 = function(wells=NULL) {
 
+  require(ggplot2)
   if(is.null(wells)) wells = load_data()
   
   subset = normalize_toxin(select(wells, file=c("J774-a.txt","J774-b.txt")))
