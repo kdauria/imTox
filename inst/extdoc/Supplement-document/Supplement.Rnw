@@ -462,6 +462,19 @@ grid.arrange(p1, p2, p3, nrow=2)
 @
 
 \clearpage
+For the previous experiment, images were taken of replicate wells
+and are shown below.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=\textwidth]{J774-images.pdf}
+  \caption[Structural changes of J774 cells after toxin addition]{
+       Structural changes of J774 cells after toxin addition
+  }
+  \label{figs-j774-images}
+\end{figure}
+
+\clearpage
 Different combinations of gdTcdB and TcdA or TcdB were added to cells
 to explore other potential interactions. None were found; the effects
 appeared to be additive.
