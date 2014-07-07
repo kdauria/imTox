@@ -1,10 +1,17 @@
+#' Code to make supplemental figure
+#' 
+#' @import ggplot2
+#' @import gridExtra
+#' @import wellz
+#' @export
+figure_s1 = function(wells=NULL) {
 
-test = function() {
-
-  subset = retrieveWells(wells, file = c("HCT8-4.txt"))
-  t.subset = normalize_toxin(subset, xlim = c(-2, Inf))
+  if(is.null(wells)) wells = load_data()
   
-  ###### Panel A
-  conditions = groupWells(t.subset, group = "by.compounds") %in% c("gdTcdB", "")
-  p1 = plot(t.subset[conditions],xlim=c(-2,10)) + ylim(0, 1.2)
+  subset = normalize_toxin(select(wells, file=c("J774-a.txt","J774-b.txt")))
+  p1 = plot( select(subset,"TcdA"), xlim=c(-0.01,0.7), points=TRUE, 
+             title="TcdA") + ylab("Normalize Impedance")
+  p2 = plot( select(subset,"TcdB"), xlim=c(-0.01,1.2), points=TRUE, 
+             title="TcdB") + ylab("Normalize Impedance")
+  grid.arrange(p1,p2,ncol=2)
 }

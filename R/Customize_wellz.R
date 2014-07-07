@@ -25,7 +25,8 @@ normalize_toxin = function(x, ID="toxinAdd", xlim=NULL, ...) {
 #' 
 #' @import wellz
 #' @param ... passed to \code{wellz::select}
-select = function(...,controls=TRUE) wellz::select(...,controls=controls)
+#' @export
+select.wellList = function(...,controls=TRUE) wellz:::select.wellList(...,controls=controls)
 
 #' small theme for ggplot2
 #'
@@ -70,6 +71,6 @@ qplot = function(...)
 plot.wellList = function(..., color="concentration", replicates=TRUE, 
                          ID="toxinAdd", title=NULL) {
   wellz:::plot.wellList(..., color=color, replicates=replicates, ID=ID) + 
-    small_theme() + if(!is.null(title)) ggtitle(title)
+    xlab("Hours") + ylab("Impedance") + small_theme() + if(!is.null(title)) ggtitle(title)
 }
 

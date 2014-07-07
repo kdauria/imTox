@@ -83,10 +83,16 @@ wells = load_data()
 
 \subsection{ Figure 1 }
 
-<< preFigure2, tidy=FALSE, fig.width=7.5, fig.height=4.5, eval=TRUE, results='hide'>>=
-figure_3(wells)
+<<hct8_txt_b>>=
+library(ggplot2,pos=3)
+library(gridExtra)
+subset = select(wells, file="HCT8.txt")
+A = normalize_toxin( select(subset, "HCT8[5000] & TcdA"))
+B = normalize_toxin( select(subset, "HCT8[5000] & TcdB"))              
+plotA = plot(A, xlim=c(-1,10), title="TcdA")
+plotB = plot(B, xlim=c(-1,10), title="TcdB")
+grid.arrange(plotA, plotB, nrow=1)
 @
-
 %\printbibliography
 
 \end{document}
