@@ -1,6 +1,6 @@
-#' Make Figure 3
+#' Make Figure 5
 #' 
-#' Makes the different panels for Figure 3 and combines them.
+#' Makes the different panels for Figure 5 and combines them.
 #' The wells object is loaded with \code{load_data} if it is
 #' not provided. Panel B was made manually by piecing together
 #' different image files in Adobe Illustrator. The data for the
@@ -15,20 +15,17 @@
 #' @import data.table
 #' @param wells the output of \code{load_data}
 #' @export
-figure_3 = function( wells=NULL ) {
+figure_5 = function( wells=NULL ) {
   
   require(ggplot2)
   if(is.null(wells)) wells = load_data()
-
-  ###### Panel A
-  subset = normalize_toxin(select(wells, file=c("J774-a.txt","J774-b.txt")))
-  subsetA = select(subset,"!TcdA[300] & !TcdA[3] & !TcdB & !Other")
-  subsetB = select(subset,"!TcdB[300] & !TcdB[3] & !TcdA & !Other")
-  p1 = plot(subsetA, xlim=c(-1,25), title="TcdA") + ylim(c(0,2.9))
-  p2 = plot(subsetB, xlim=c(-1,25), title="TcdB") + ylim(c(0,2.9))
-    top.plot = arrangeGrob(p1,p2,nrow=1)
   
-  ### Panel C
+  ### Panel A
+  subset = normalize_toxin(select(wells, file=c("J774-6.txt")))
+  subsetgB = select(subset, "(gdTcdB[1-100] | TcdB[10-100]) & !((TcdB | TcdA) & gdTcdB)")
+  top.plot = plot(subsetgB, xlim=c(-1,25), title="gdTcdB") + ylim(c(0,2.9))
+  
+  ### Panel B
   x = load_cck8_data()
   
   # Normalize to controls and lysis values
@@ -38,10 +35,9 @@ figure_3 = function( wells=NULL ) {
   x = add_spline(x) # need to update the spline whenever the data is modified
   
   # Select a subset of the data and reorganize it for bar plots
-  y = select(x, "(A[10-100] | B[10-100] | control | lysis) & !mB & !blank")
+  y = select(x, "(mB[10-100] | control | lysis) & !(A & mB) & !(B & mB)")
   dat = melt_wellList_params(y,color="concentration")
   
-  #devSVG(file="./Figures/bars.svg",width=9,height=2)
   bar.plots = ggplot(data=dat, aes(x=factor(t),y=value)) +
     stat_summary(fun.y="mean", geom="bar") +
     facet_wrap(~concentration,nrow=1) +
@@ -56,10 +52,6 @@ figure_3 = function( wells=NULL ) {
           axis.text=element_blank(),
           axis.ticks=element_blank(),
           axis.title=element_blank())
-  grid.arrange(top.plot, bar.plots, nrow=2, heights=c(0.7,0.3))
-  #dev.off()
+
+  grid.arrange(top.plot, bar.plots, nrow=1)
 }
-
-
-
-

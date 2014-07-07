@@ -3,7 +3,7 @@
 \alias{select.wellList}
 \title{Change default of wellz::select}
 \usage{
-select.wellList(..., controls = TRUE)
+\method{select}{wellList}(..., controls = TRUE)
 }
 \arguments{
 \item{...}{passed to \code{wellz::select}}

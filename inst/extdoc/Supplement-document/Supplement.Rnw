@@ -95,10 +95,10 @@ spreadsheet denoting the compounds and concentrations in each well are in
 \texttt{extdata/Data} directory.
 
 <<libraries, echo=TRUE>>=
-library(devtools)
-install_github("kdauria/wellz")
-install_github("kdauria/imTox")
-library(wellz)
+library(devtools )
+#install_github("kdauria/wellz")
+#install_github("kdauria/imTox")
+library(wellz )
 library(imTox)
 wells = load_data()
 @
@@ -191,14 +191,20 @@ figure_2(wells)
 
 \subsection{ Figure 3 }
 
-<<Figure3top, fig.cap="Plots for Figure 3 of the manuscript">>=
-figure_3(wells)
+<<Figure3top, fig.height=4.5, fig.cap="Plots for Figure 3 of the manuscript">>=
+figure_3(wells )
 @
 
 \subsection{ Figure 4 }
 
 <<Figure4, fig.height=5, fig.cap="Plots for Figure 4 of the manuscript">>=
 figure_4(wells)
+@
+
+\subsection{ Figure 5 }
+
+<<Figure5, fig.cap="Plots for Figure 5 of the manuscript", out.width="6in", fig.width=6>>=
+figure_5(wells )
 @
 
 
