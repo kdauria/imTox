@@ -103,12 +103,6 @@ library(imTox)
 wells = load_data()
 @
 
-
-aa = select(wells,file="rHCT8.txt")
-aa = select(wells,file="HCT8.txt")
-
-aa = select(wells,"HUVEC & TcdA")
-
 \section{ References from manuscript }
 
 \subsection{ Reference 1 }
@@ -166,8 +160,26 @@ to measure impedance changes of neutrophils in response to toxins,
 yet the variability in these primarily non-adherent cells (impedance 
 largely measures adherence) was too high to identify differences (Supplement)''
 
-
 See \autoref{S:PMNs} for four experiments with PMNs and corresponding text.
+
+\subsection{ Reference 5}
+
+``All reported results are from experiments using native TcdB. 
+The cytopathic effects of recombinant TcdB was confirmed using 
+HCT-8 cells (Supplement).''
+
+The native toxin (TcdB) was more potent than the recombinant toxin (rTcdB).
+However, the similar changes in impedance caused by TcdB and rTcdB confrm
+the functionality of rTcdB.
+
+<<suppRef5>>=
+subset = select(wells,"TcdB[1-1000] | rTcdB[1-1000]", file="rHCT8.txt")
+nsubset = normalize_toxin(subset)
+concs = group(subset,"concentration",compound="TcdB") + 
+  group(subset,"concentration",compound="rTcdB")
+plot(nsubset, color=as.character(concs), linetype="compound") +
+  scale_colour_discrete(name = "ng/ml")
+@
 
 
 \section{ Reproducing Figures }\label{S:ReFig}
