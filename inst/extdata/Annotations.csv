@@ -275,3 +275,5 @@ PMN-4.txt	A-G1-2	start	0	0	50	IL8	1387.3	start
 	F1-4					TcdB	100	final	
 	G1-4					TcdB	10	final	
 	C1-4					-	-	-	
+rHCT8.txt	A-H3-4	start	0	0	100	-	-	-	
+	A-H3-4	cellSeed	2	0	100	HCT8	60000	total	
