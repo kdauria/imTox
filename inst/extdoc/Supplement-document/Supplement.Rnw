@@ -96,13 +96,18 @@ spreadsheet denoting the compounds and concentrations in each well are in
 
 <<libraries, echo=TRUE>>=
 library(devtools )
-#install_github("kdauria/wellz")
-#install_github("kdauria/imTox")
-library(wellz )
+install_github("kdauria/wellz")
+install_github("kdauria/imTox")
+library(wellz)
 library(imTox)
 wells = load_data()
 @
 
+
+aa = select(wells,file="rHCT8.txt")
+aa = select(wells,file="HCT8.txt")
+
+aa = select(wells,"HUVEC & TcdA")
 
 \section{ References from manuscript }
 

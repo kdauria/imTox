@@ -277,3 +277,7 @@ PMN-4.txt	A-G1-2	start	0	0	50	IL8	1387.3	start
 	C1-4					-	-	-	
 rHCT8.txt	A-H3-4	start	0	0	100	-	-	-	
 	A-H3-4	cellSeed	2	0	100	HCT8	60000	total	
+	A-D3, F-H3	toxinAdd	76	0	22.2	rTcdB	1000, 100, 10, 1, 0.1, 0.01, 0.001	final	
+	A-D4, F-H4		48			TcdB			
+	E3		76			-	-	-	
+	E4		48						
